@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Social Media Calendar - <%= month %> <%= year %></title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background: white;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        .header h1 {
+            color: #1f2937;
+            margin: 0 0 10px 0;
+        }
+        .header p {
+            color: #6b7280;
+            margin: 5px 0;
+        }
+        .content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .post {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            page-break-inside: avoid;
+        }
+        .post-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .post-title {
+            font-weight: bold;
+            font-size: 1.1em;
+            color: #2563eb;
+        }
+        .post-datetime {
+            color: #6b7280;
+            font-size: 0.9em;
+        }
+        .post-description {
+            color: #1f2937;
+            margin: 10px 0;
+            white-space: pre-wrap;
+        }
+        .platforms {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 15px;
+        }
+        .platform-tag {
+            background: #e5e7eb;
+            color: #1f2937;
+            padding: 4px 12px;
+            border-radius: 9999px;
+            font-size: 0.875em;
+        }
+        @media print {
+            body {
+                padding: 0;
+                background: white;
+            }
+            .post {
+                break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="content">
+        <div class="header">
+            <h1>Social Media Content Calendar</h1>
+            <p><%= month %> <%= year %></p>
+            <p>Generated for: <%= user.username %></p>
+        </div>
+
+        <% if (posts.length === 0) { %>
+            <div style="text-align: center; color: #6b7280; padding: 40px;">
+                No posts scheduled for this month.
+            </div>
+        <% } else { %>
+            <% posts.forEach(post => { %>
+                <div class="post">
+                    <div class="post-header">
+                        <div class="post-title"><%= post.title %></div>
+                        <div class="post-datetime">
+                            <%= post.date %> at <%= post.time %>
+                        </div>
+                    </div>
+                    <div class="post-description"><%= post.description %></div>
+                    <div class="platforms">
+                        <% post.social_media.forEach(platform => { %>
+                            <span class="platform-tag"><%= platform %></span>
+                        <% }); %>
+                    </div>
+                </div>
+            <% }); %>
+        <% } %>
+    </div>
+</body>
+</html>

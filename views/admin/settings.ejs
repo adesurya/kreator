@@ -1,0 +1,188 @@
+<!-- views/admin/settings.ejs -->
+<%- contentFor('body') %>
+<div class="container mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-2xl font-bold text-gray-900">Application Settings</h1>
+        <p class="text-gray-600 mt-2">Configure your application settings here</p>
+    </div>
+
+    <!-- Settings Sections -->
+    <div class="space-y-8">
+        <!-- API Configuration -->
+        <div class="bg-white shadow rounded-lg p-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">API Configuration</h2>
+            
+            <div class="space-y-4">
+                <!-- Epsilla API Key -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Epsilla API Key</label>
+                    <div class="mt-1 flex rounded-md shadow-sm">
+                        <input type="text" 
+                               value="<%= apiSettings.epsillaApiKey %>" 
+                               readonly
+                               class="flex-1 min-w-0 block w-full px-3 py-2 rounded-md border border-gray-300 bg-gray-50">
+                        <button onclick="copyToClipboard(this.previousElementSibling)"
+                                class="ml-3 inline-flex items-center px-4 py-2 border border-gray-300 rounded-md bg-white hover:bg-gray-50">
+                            Copy
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Epsilla Namespace -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Epsilla Namespace</label>
+                    <div class="mt-1 flex rounded-md shadow-sm">
+                        <input type="text" 
+                               value="<%= apiSettings.epsillaNamespace %>" 
+                               readonly
+                               class="flex-1 min-w-0 block w-full px-3 py-2 rounded-md border border-gray-300 bg-gray-50">
+                        <button onclick="copyToClipboard(this.previousElementSibling)"
+                                class="ml-3 inline-flex items-center px-4 py-2 border border-gray-300 rounded-md bg-white hover:bg-gray-50">
+                            Copy
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Epsilla App ID -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Epsilla App ID</label>
+                    <div class="mt-1 flex rounded-md shadow-sm">
+                        <input type="text" 
+                               value="<%= apiSettings.epsillaAppId %>" 
+                               readonly
+                               class="flex-1 min-w-0 block w-full px-3 py-2 rounded-md border border-gray-300 bg-gray-50">
+                        <button onclick="copyToClipboard(this.previousElementSibling)"
+                                class="ml-3 inline-flex items-center px-4 py-2 border border-gray-300 rounded-md bg-white hover:bg-gray-50">
+                            Copy
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Application Settings -->
+        <div class="bg-white shadow rounded-lg p-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">Application Settings</h2>
+            
+            <form id="appSettingsForm" class="space-y-4">
+                <!-- Session Timeout -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Session Timeout (minutes)</label>
+                    <input type="number" 
+                           name="session_timeout"
+                           value="<%= settings.session_timeout || 60 %>"
+                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                </div>
+
+                <!-- Max Conversations Per User -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Max Conversations Per User</label>
+                    <input type="number" 
+                           name="max_conversations"
+                           value="<%= settings.max_conversations || 10 %>"
+                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                </div>
+
+                <!-- Save Button -->
+                <div class="flex justify-end pt-4">
+                    <button type="submit"
+                            class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Danger Zone -->
+        <div class="bg-white shadow rounded-lg p-6 border border-red-200">
+            <h2 class="text-lg font-semibold text-red-600 mb-4">Danger Zone</h2>
+            
+            <div class="space-y-4">
+                <!-- Clear All Data -->
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-900">Clear All Conversations</h3>
+                        <p class="text-sm text-gray-500">Delete all chat history and conversations</p>
+                    </div>
+                    <button onclick="clearAllData()"
+                            class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">
+                        Clear Data
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- contentFor('script') %>
+<script>
+function copyToClipboard(input) {
+    input.select();
+    document.execCommand('copy');
+    
+    // Show feedback
+    const button = input.nextElementSibling;
+    const originalText = button.textContent;
+    button.textContent = 'Copied!';
+    setTimeout(() => {
+        button.textContent = originalText;
+    }, 2000);
+}
+
+document.getElementById('appSettingsForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const settings = Object.fromEntries(formData);
+
+    try {
+        const response = await fetch('/admin/settings/update', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(settings)
+        });
+
+        if (response.ok) {
+            showNotification('Settings updated successfully');
+        } else {
+            throw new Error('Failed to update settings');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showNotification('Failed to update settings', 'error');
+    }
+});
+
+function showNotification(message, type = 'success') {
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg ${
+        type === 'success' ? 'bg-green-500' : 'bg-red-500'
+    } text-white`;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    setTimeout(() => notification.remove(), 3000);
+}
+
+async function clearAllData() {
+    if (!confirm('Are you sure you want to clear all conversations? This action cannot be undone.')) {
+        return;
+    }
+
+    try {
+        const response = await fetch('/admin/clear-data', {
+            method: 'POST'
+        });
+
+        if (response.ok) {
+            showNotification('All data cleared successfully');
+        } else {
+            throw new Error('Failed to clear data');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showNotification('Failed to clear data', 'error');
+    }
+}
+</script>

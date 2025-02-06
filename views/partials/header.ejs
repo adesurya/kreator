@@ -1,224 +1,143 @@
-<!-- views/partials/header.ejs -->
-<header class="bg-white shadow-lg">
-    <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between h-16">
-            <!-- Logo and Main Navigation -->
-            <div class="flex">
-                <!-- Mobile menu button -->
-                <div class="flex items-center sm:hidden">
-                    <button type="button" 
-                            onclick="toggleMobileMenu()"
-                            class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500" 
-                            aria-controls="mobile-menu" 
-                            aria-expanded="false">
-                        <span class="sr-only">Open main menu</span>
-                        <!-- Icon when menu is closed -->
-                        <svg id="menu-closed-icon" 
-                             class="block h-6 w-6" 
-                             xmlns="http://www.w3.org/2000/svg" 
-                             fill="none" 
-                             viewBox="0 0 24 24" 
-                             stroke="currentColor" 
-                             aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                        </svg>
-                        <!-- Icon when menu is open -->
-                        <svg id="menu-open-icon" 
-                             class="hidden h-6 w-6" 
-                             xmlns="http://www.w3.org/2000/svg" 
-                             fill="none" 
-                             viewBox="0 0 24 24" 
-                             stroke="currentColor" 
-                             aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Navigation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            padding-top: 4rem;
+        }
+        .dropdown:hover .dropdown-menu {
+            display: block;
+        }
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background-color: white;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+            border-radius: 0.5rem;
+        }
+        .dropdown-menu a:hover {
+            background-color: #f3f4f6;
+            color: #2563eb;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <nav id="header" class="bg-white shadow-lg fixed w-full z-50 top-0">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="#" class="text-xl font-bold text-gray-700">Brand</a>
                 </div>
+                <!-- Menu Desktop -->
+                <div class="hidden md:flex space-x-6 items-center">
+                    <a href="#" class="text-gray-700 hover:text-blue-500">Home</a>
+                    <a href="#" class="text-gray-700 hover:text-blue-500">About</a>
 
-                <!-- Logo -->
-                <div class="flex-shrink-0 flex items-center">
-                    <a href="/" class="flex items-center">
-                        <span class="text-2xl font-bold text-blue-600">KREATOR</span>
-                        <span class="text-2xl font-bold text-gray-900">AI</span>
-                    </a>
-                </div>
+                    <!-- Dropdown Menu -->
+                    <div class="relative" id="dropdownContainer">
+                        <button id="dropdownButton" class="flex items-center text-gray-700 hover:text-blue-500 focus:outline-none">
+                            Services
+                            <svg class="w-4 h-4 ml-1 transition-transform duration-200" id="dropdownArrow"
+                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+                        <div id="dropdownMenu" class="absolute hidden bg-white shadow-md rounded-md mt-2 py-2 w-48 z-10">
+                            <a href="#" class="block px-4 py-2 hover:bg-blue-200">Web Development</a>
+                            <a href="#" class="block px-4 py-2 hover:bg-blue-200">SEO</a>
+                            <a href="#" class="block px-4 py-2 hover:bg-blue-200">Marketing</a>
+                        </div>
+                    </div>
 
-                <!-- Desktop Navigation -->
-                <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+                    <a href="#" class="text-gray-700 hover:text-blue-500">Contact</a>
+
                     <% if (locals.user) { %>
-                        <a href="/idekreator" 
-                            class="<%= path === '/idekreator' ? 'border-blue-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700' %> inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-                            Ide Kreator
-                        </a>
-                        <a href="/planner" 
-                            class="<%= path === '/idekreator' ? 'border-blue-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700' %> inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-                            Calendar Planner
-                         </a>
-                         <a href="/transcribe" 
-                            class="<%= path === '/transcribe' ? 'border-blue-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700' %> inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-                                Transcribe
-                        </a>
-                        <a href="/image-generator" 
-                            class="<%= path === '/image-generator' ? 'border-blue-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700' %> inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-                            Image Generator
-                        </a>
-                        <a href="/document-resume" 
-                        class="<%= path === '/document-resume' ? 'border-blue-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700' %> inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-                        Document Summarize
-                        </a>
-                    </a>
-                        <% if (user.role === 'admin') { %>
-                            <a href="/admin/dashboard" 
-                               class="<%= path.startsWith('/admin') ? 'border-blue-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700' %> inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-                                Dashboard
-                            </a>
-                            <a href="/admin/users" 
-                               class="<%= path === '/admin/users' ? 'border-blue-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700' %> inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-                                Users
-                            </a>
-                        <% } %>
+                        <a href="/logout" class="text-red-500 hover:text-red-700">Logout</a>
+                    <% } %>
+                    <% if (locals.user && locals.user.role === 'admin') { %>
+                        <a href="/admin" class="text-gray-700 hover:text-blue-500">Admin Panel</a>
                     <% } %>
                 </div>
-            </div>
 
-            <!-- Right side menu -->
-            <div class="hidden sm:ml-6 sm:flex sm:items-center">
-                <% if (locals.user) { %>
-                    <!-- User dropdown -->
-                    <div class="ml-3 relative">
-                        <div>
-                            <button type="button" 
-                                    onclick="toggleUserMenu()"
-                                    class="bg-white rounded-full flex items-center text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" 
-                                    id="user-menu-button" 
-                                    aria-expanded="false" 
-                                    aria-haspopup="true">
-                                <span class="sr-only">Open user menu</span>
-                                <div class="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center">
-                                    <span class="text-white font-medium">
-                                        <%= user.username.charAt(0).toUpperCase() %>
-                                    </span>
-                                </div>
-                            </button>
-                        </div>
-                        <!-- Dropdown menu -->
-                        <div id="user-menu-dropdown" 
-                             class="hidden origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none" 
-                             role="menu" 
-                             aria-orientation="vertical" 
-                             aria-labelledby="user-menu-button" 
-                             tabindex="-1">
-                            <div class="px-4 py-2 text-sm text-gray-700 border-b">
-                                Signed in as <br>
-                                <strong><%= user.username %></strong>
-                            </div>
-                            <a href="/profile" 
-                               class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" 
-                               role="menuitem">
-                                Profile Settings
-                            </a>
-                            <a href="/logout" 
-                               class="block px-4 py-2 text-sm text-red-700 hover:bg-gray-100" 
-                               role="menuitem">
-                                Sign out
-                            </a>
-                        </div>
-                    </div>
-                <% } else { %>
-                    <div class="flex space-x-4">
-                        <a href="/login" 
-                           class="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium">
-                            Login
-                        </a>
-                        <a href="/register" 
-                           class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700">
-                            Register
-                        </a>
-                    </div>
-                <% } %>
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden flex items-center">
+                    <button id="menu-btn" class="text-gray-700 focus:outline-none">
+                        ☰
+                    </button>
+                </div>
             </div>
         </div>
-    </nav>
-
-    <!-- Mobile menu -->
-    <div class="sm:hidden hidden" id="mobile-menu">
-        <div class="pt-2 pb-3 space-y-1">
+        <!-- Menu Mobile -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white shadow-lg py-2">
+            <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Home</a>
+            <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">About</a>
+            <div class="group">
+                <button class="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100" id="submenu-btn">Services ▼</button>
+                <div id="submenu" class="hidden bg-gray-50 pl-6">
+                    <a href="#" class="block px-4 py-2 hover:bg-blue-200">Web Development</a>
+                    <a href="#" class="block px-4 py-2 hover:bg-blue-200">SEO</a>
+                    <a href="#" class="block px-4 py-2 hover:bg-blue-200">Marketing</a>
+                </div>
+            </div>
+            <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Contact</a>
             <% if (locals.user) { %>
-                    <a href="/idekreator" 
-                       class="<%= path === '/idekreator' ? 'border-blue-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700' %> inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-                        Ide Kreator
-                    </a>
-                    <a href="/planner" 
-                    class="<%= path === '/planner' ? 'border-blue-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700' %> inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-                     Calendar Content
-                    </a>
-                    <a href="/transcribe" 
-                       class="<%= path === '/transcribe' ? 'border-blue-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700' %> inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-                        Transcribe
-                    </a>
-                    <a href="/image-generator" 
-                       class="<%= path === '/image-generator' ? 'border-blue-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700' %> inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-                        Image Generator
-                    </a>
-                    <a href="/document-resume" 
-                       class="<%= path === '/document-resume' ? 'border-blue-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700' %> inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-                        Document Summarize
-                    </a>
-                <% if (user.role === 'admin') { %>
-                    <a href="/admin/dashboard" 
-                       class="<%= path.startsWith('/admin') ? 'bg-blue-50 border-blue-500 text-blue-700' : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700' %> block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
-                        Dashboard
-                    </a>
-                    <a href="/admin/users" 
-                       class="<%= path === '/admin/users' ? 'bg-blue-50 border-blue-500 text-blue-700' : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700' %> block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
-                        Users
-                    </a>
-                <% } %>
-                <a href="/profile" 
-                   class="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
-                    Profile
-                </a>
-                <a href="/logout" 
-                   class="border-transparent text-red-500 hover:bg-gray-50 hover:border-red-300 hover:text-red-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
-                    Sign out
-                </a>
-            <% } else { %>
-                <a href="/login" 
-                   class="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
-                    Login
-                </a>
-                <a href="/register" 
-                   class="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
-                    Register
-                </a>
+                <a href="/logout" class="block px-4 py-2 text-red-500 hover:bg-gray-100">Logout</a>
+            <% } %>
+            <% if (locals.user && locals.user.role === 'admin') { %>
+                <a href="/admin" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Admin Panel</a>
             <% } %>
         </div>
-    </div>
-</header>
-
-<script>
-function toggleMobileMenu() {
-    const mobileMenu = document.getElementById('mobile-menu');
-    const menuClosedIcon = document.getElementById('menu-closed-icon');
-    const menuOpenIcon = document.getElementById('menu-open-icon');
+    </nav>
     
-    mobileMenu.classList.toggle('hidden');
-    menuClosedIcon.classList.toggle('hidden');
-    menuOpenIcon.classList.toggle('hidden');
-}
-
-function toggleUserMenu() {
-    const dropdown = document.getElementById('user-menu-dropdown');
-    dropdown.classList.toggle('hidden');
-    
-    // Close dropdown when clicking outside
-    document.addEventListener('click', function(event) {
-        const isClickInside = event.target.closest('#user-menu-button');
-        const dropdown = document.getElementById('user-menu-dropdown');
+    <script>
+        // Toggle Mobile Menu
+        document.getElementById('menu-btn').addEventListener('click', function() {
+            document.getElementById('mobile-menu').classList.toggle('hidden');
+        });
+        // Toggle Submenu Mobile
+        document.getElementById('submenu-btn').addEventListener('click', function() {
+            document.getElementById('submenu').classList.toggle('hidden');
+        });
         
-        if (!isClickInside && !dropdown.classList.contains('hidden')) {
-            dropdown.classList.add('hidden');
+        // Hide Header on /login Page
+        if (window.location.pathname === "/login") {
+            document.getElementById("header").style.display = "none";
         }
+
+        document.addEventListener("DOMContentLoaded", function () {
+        const dropdownContainer = document.getElementById("dropdownContainer");
+        const dropdownButton = document.getElementById("dropdownButton");
+        const dropdownMenu = document.getElementById("dropdownMenu");
+        const dropdownArrow = document.getElementById("dropdownArrow");
+
+        let timeout; // Untuk menunda penutupan dropdown
+
+        function showDropdown() {
+            clearTimeout(timeout);
+            dropdownMenu.classList.remove("hidden");
+            dropdownArrow.classList.add("rotate-180");
+        }
+
+        function hideDropdown() {
+            timeout = setTimeout(() => {
+                dropdownMenu.classList.add("hidden");
+                dropdownArrow.classList.remove("rotate-180");
+            }, 300); // Delay 300ms agar tidak langsung tertutup
+        }
+
+        dropdownContainer.addEventListener("mouseenter", showDropdown);
+        dropdownContainer.addEventListener("mouseleave", hideDropdown);
+
+        dropdownMenu.addEventListener("mouseenter", showDropdown);
+        dropdownMenu.addEventListener("mouseleave", hideDropdown);
     });
-}
-</script>
+    </script>
+</body>
+</html>

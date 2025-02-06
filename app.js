@@ -36,7 +36,6 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.set('layout', 'layouts/main');
 
-// Global middleware untuk template variables
 app.use((req, res, next) => {
     // Set default template variables
     res.locals.style = '';
@@ -44,19 +43,17 @@ app.use((req, res, next) => {
     res.locals.user = req.session.user || null;
     res.locals.path = req.path;
     res.locals.error = null;
+
     res.setHeader(
         'Content-Security-Policy',
-        "default-src 'self'; " +
-        "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; " +
-        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; " +
-        "img-src 'self' data: blob: https://oaidalleapiprodscus.blob.core.windows.net; " +
-        "img-src 'self' data: blob: https: http:; " + // Allow external images
-        "font-src 'self' data: https://cdn.jsdelivr.net; " +
-        "connect-src 'self' https://api.openai.com https://oaidalleapiprodscus.blob.core.windows.net" +
-        "connect-src 'self'" 
-
-
+        "default-src 'self' *; " +
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' *; " +
+        "style-src 'self' 'unsafe-inline' *; " +
+        "img-src 'self' data: blob: *; " +
+        "font-src 'self' data: *; " +
+        "connect-src 'self' *;"
     );
+
     next();
 });
 
@@ -130,7 +127,7 @@ setInterval(() => {
     });
 }, 3600000); 
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });

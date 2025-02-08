@@ -1,0 +1,59 @@
+<!-- views/landing/_cta.ejs -->
+<section class="relative bg-gradient-to-r from-blue-600 to-indigo-700">
+    <!-- Background Pattern -->
+    <div class="absolute inset-0 opacity-10">
+        <svg class="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+            <defs>
+                <pattern id="pattern-circles" width="50" height="50" patternUnits="userSpaceOnUse">
+                    <circle cx="25" cy="25" r="1" fill="currentColor"/>
+                </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#pattern-circles)"/>
+        </svg>
+    </div>
+
+    <div class="relative max-w-7xl mx-auto py-16 px-4 sm:py-24 sm:px-6 lg:px-8">
+        <div class="text-center">
+            <h2 class="text-3xl font-extrabold text-white sm:text-4xl">
+                Ready to transform your business?
+            </h2>
+            <p class="mt-4 text-lg leading-6 text-indigo-100">
+                Start your 14-day free trial today. No credit card required.
+            </p>
+            <div class="mt-8 flex justify-center">
+                <div class="inline-flex rounded-md shadow">
+                    <a href="/register" class="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-blue-600 bg-white hover:bg-indigo-50">
+                        Get started for free
+                    </a>
+                </div>
+                <div class="ml-3 inline-flex">
+                    <a href="#features" class="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-700 bg-opacity-60 hover:bg-opacity-70">
+                        Learn more
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Trust Badges -->
+        <div class="mt-16">
+            <div class="grid grid-cols-2 gap-8 md:grid-cols-4">
+                <div class="flex justify-center">
+                    <img class="h-12" src="/images/badges/secure.svg" alt="Secure Platform">
+                    <span class="ml-2 text-white">256-bit Encryption</span>
+                </div>
+                <div class="flex justify-center">
+                    <img class="h-12" src="/images/badges/gdpr.svg" alt="GDPR Compliant">
+                    <span class="ml-2 text-white">GDPR Compliant</span>
+                </div>
+                <div class="flex justify-center">
+                    <img class="h-12" src="/images/badges/support.svg" alt="24/7 Support">
+                    <span class="ml-2 text-white">24/7 Support</span>
+                </div>
+                <div class="flex justify-center">
+                    <img class="h-12" src="/images/badges/uptime.svg" alt="99.9% Uptime">
+                    <span class="ml-2 text-white">99.9% Uptime</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

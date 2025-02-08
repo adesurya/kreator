@@ -7,6 +7,7 @@ const plannerRoutes = require('./routes/planner');
 const fs = require('fs');
 const transcribeRoutes = require('./routes/transcribe');
 const multer = require('multer');
+const landingRoutes = require('./routes/landing'); // Add this line
 
 require('dotenv').config();
 
@@ -44,6 +45,13 @@ app.use((req, res, next) => {
     res.locals.path = req.path;
     res.locals.error = null;
 
+    res.locals.meta = {
+        title: 'KreatorAI - AI-Powered Content & Business Tools',
+        description: 'Transform your business with AI-powered content creation, social media management, and productivity tools.',
+        keywords: 'AI, content creation, business tools, productivity, social media',
+        ogImage: '/images/og-image.jpg'
+    };
+
     res.setHeader(
         'Content-Security-Policy',
         "default-src 'self' *; " +
@@ -73,7 +81,7 @@ if (!fs.existsSync(tempDir)){
     fs.mkdirSync(tempDir);
 }
 // Use routes
-app.use('/', authRoutes);
+
 app.use('/chat', chatRoutes);
 app.use('/admin', adminRoutes);
 app.use('/idekreator', idekreatorRoutes);  // Tambahkan ini
@@ -83,16 +91,26 @@ app.use('/image-generator', imageGeneratorRoutes);
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 app.use('/gbp', gbpRoutes);  // Use GBP routes
 app.use('/image-caption', imageCaptionRoutes);
+app.use('/', landingRoutes); // Set landing page as root
+app.use('/auth', authRoutes);
+app.use(documentResumeRoute);
+
 
 
 app.use(documentResumeRoute);
 
 
 
-
 // Root route
 app.get('/', (req, res) => {
-    res.redirect('/login');
+    if (req.session && req.session.userId) {
+        res.redirect('/chat'); // Redirect logged in users to dashboard
+    } else {
+        res.render('landing/index', {
+            layout: 'layouts/landing',
+            user: null
+        });
+    }
 });
 
 // Error handler
@@ -112,6 +130,20 @@ app.use((err, req, res, next) => {
             error: 'File upload error: ' + err.message
         });
     }
+
+    const statusCode = err.statusCode || 500;
+    const message = process.env.NODE_ENV === 'production' 
+        ? 'Internal Server Error' 
+        : err.message;
+
+    res.status(statusCode).render('error', {
+        layout: 'layouts/error',
+        error: {
+            status: statusCode,
+            message: message,
+            stack: process.env.NODE_ENV === 'production' ? null : err.stack
+        }
+    });
     next(err);
 });
 

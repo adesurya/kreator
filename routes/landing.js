@@ -5,7 +5,7 @@ const router = express.Router();
 router.get('/', (req, res) => {
     // If user is already logged in, redirect to dashboard
     if (req.session && req.session.userId) {
-        return res.redirect('/chat');
+        return res.redirect('/dashboard');
     }
     
     res.render('landing/index', {

@@ -7,7 +7,7 @@ const plannerRoutes = require('./routes/planner');
 const fs = require('fs');
 const transcribeRoutes = require('./routes/transcribe');
 const multer = require('multer');
-const landingRoutes = require('./routes/landing'); // Add this line
+const dashboardRoutes = require('./routes/dashboard');
 
 require('dotenv').config();
 
@@ -74,7 +74,7 @@ const imageGeneratorRoutes = require('./routes/imageGenerator');
 const documentResumeRoute = require('./routes/documentResume');
 const gbpRoutes = require('./routes/gbp');  // Import GBP routes
 const imageCaptionRoutes = require('./routes/imageCaption');
-
+const landingRoutes = require('./routes/landing');
 
 const tempDir = path.join(__dirname, 'temp');
 if (!fs.existsSync(tempDir)){
@@ -82,36 +82,52 @@ if (!fs.existsSync(tempDir)){
 }
 // Use routes
 
-app.use('/chat', chatRoutes);
-app.use('/admin', adminRoutes);
-app.use('/idekreator', idekreatorRoutes);  // Tambahkan ini
-app.use('/planner', plannerRoutes);
-app.use('/transcribe', transcribeRoutes);
-app.use('/image-generator', imageGeneratorRoutes);
-app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
-app.use('/gbp', gbpRoutes);  // Use GBP routes
-app.use('/image-caption', imageCaptionRoutes);
-app.use('/', landingRoutes); // Set landing page as root
-app.use('/auth', authRoutes);
-app.use(documentResumeRoute);
+//app.use('/', landingRoutes); // Set landing page as root
 
-
-
-app.use(documentResumeRoute);
 
 
 
 // Root route
 app.get('/', (req, res) => {
     if (req.session && req.session.userId) {
-        res.redirect('/chat'); // Redirect logged in users to dashboard
-    } else {
-        res.render('landing/index', {
-            layout: 'layouts/landing',
-            user: null
-        });
+        if (req.session.user.role === 'admin') {
+            return res.redirect('/admin/dashboard');
+        }
+        return res.redirect('/dashboard');
     }
+    res.render('landing/index', {
+        layout: 'layouts/landing',
+        user: null,
+        testimonials: [],
+        features: [],
+        plans: []
+    });
 });
+
+app.use('/auth', authRoutes);  // Auth routes harus di atas
+app.use('/dashboard', dashboardRoutes);
+app.use('/chat', chatRoutes);
+app.use('/admin', adminRoutes);
+app.use('/idekreator', idekreatorRoutes);
+app.use('/planner', plannerRoutes);
+app.use('/transcribe', transcribeRoutes);
+app.use('/image-generator', imageGeneratorRoutes);
+app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
+app.use('/gbp', gbpRoutes);
+app.use('/image-caption', imageCaptionRoutes);
+app.use(documentResumeRoute);
+
+// Handle 404
+app.use((req, res) => {
+    res.status(404).render('error/404', {
+        layout: 'layouts/error',
+        error: {
+            status: 404,
+            message: 'Page not found'
+        }
+    });
+});
+
 
 // Error handler
 app.use((err, req, res, next) => {

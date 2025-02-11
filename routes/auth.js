@@ -1,10 +1,17 @@
 const express = require('express');
 const router = express.Router();
+const db = require('../config/database');
 const bcrypt = require('bcryptjs');
-const db = require('../config/database'); // pastikan path sesuai
 
-const authRoutes = {
+// Controllers
+const authController = {
     getLogin: (req, res) => {
+        if (req.session && req.session.userId) {
+            if (req.session.user.role === 'admin') {
+                return res.redirect('/admin/dashboard');
+            }
+            return res.redirect('/dashboard');
+        }
         res.render('auth/login', { 
             error: null,
             style: '',
@@ -24,11 +31,8 @@ const authRoutes = {
             );
             
             const user = users[0];
-            
-            // Debug log
             console.log('Login attempt:', { email, userFound: !!user });
 
-            // Jika user tidak ditemukan
             if (!user) {
                 return res.render('auth/login', { 
                     error: 'Invalid email or password',
@@ -38,10 +42,7 @@ const authRoutes = {
                 });
             }
 
-            // Verifikasi password
             const isValidPassword = await bcrypt.compare(password, user.password);
-            
-            // Debug log
             console.log('Password verification:', { isValid: isValidPassword });
 
             if (!isValidPassword) {
@@ -53,7 +54,6 @@ const authRoutes = {
                 });
             }
 
-            // Set session
             req.session.userId = user.id;
             req.session.user = {
                 id: user.id,
@@ -61,20 +61,18 @@ const authRoutes = {
                 email: user.email,
                 role: user.role
             };
-
-            // Debug log
+            
             console.log('Session set:', req.session);
 
-            // Redirect berdasarkan role
             if (user.role === 'admin') {
                 return res.redirect('/admin/dashboard');
             } else {
-                return res.redirect('/chat');
+                return res.redirect('/dashboard');
             }
 
         } catch (error) {
             console.error('Login error:', error);
-            res.render('auth/login', { 
+            return res.render('auth/login', { 
                 error: 'Login failed. Please try again.',
                 style: '',
                 script: '',
@@ -84,6 +82,9 @@ const authRoutes = {
     },
 
     getRegister: (req, res) => {
+        if (req.session && req.session.userId) {
+            return res.redirect('/dashboard');
+        }
         res.render('auth/register', { 
             error: null,
             style: '',
@@ -95,24 +96,53 @@ const authRoutes = {
     postRegister: async (req, res) => {
         try {
             const { username, email, password } = req.body;
-            // Implementasi register logic
-            res.redirect('/login');
+            const hashedPassword = await bcrypt.hash(password, 10);
+            
+            await db.execute(
+                'INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)',
+                [username, email, hashedPassword, 'user']
+            );
+            
+            res.redirect('/auth/login');
         } catch (error) {
-            res.render('auth/register', { error: 'Registration failed' });
+            console.error('Registration error:', error);
+            res.render('auth/register', { 
+                error: 'Registration failed. Please try again.',
+                style: '',
+                script: '',
+                user: null
+            });
         }
     },
 
-    logout: (req, res) => {
-        req.session.destroy();
-        res.redirect('/login');
+    logout: async (req, res) => {
+        try {
+            // Destroy the session
+            await new Promise((resolve, reject) => {
+                req.session.destroy((err) => {
+                    if (err) reject(err);
+                    else resolve();
+                });
+            });
+
+            // Clear session cookie
+            res.clearCookie('connect.sid');
+            
+            // Redirect to landing page
+            return res.redirect('/');
+            
+        } catch (error) {
+            console.error('Logout error:', error);
+            return res.redirect('/');
+        }
     }
 };
 
-// Define routes with handler functions
-router.get('/login', authRoutes.getLogin);
-router.post('/login', authRoutes.postLogin);
-router.get('/register', authRoutes.getRegister);
-router.post('/register', authRoutes.postRegister);
-router.get('/logout', authRoutes.logout);
+// Routes
+router.get('/login', authController.getLogin);
+router.post('/login', authController.postLogin);
+router.get('/register', authController.getRegister);
+router.post('/register', authController.postRegister);
+router.get('/logout', authController.logout);
 
 module.exports = router;

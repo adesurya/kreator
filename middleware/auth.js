@@ -11,13 +11,23 @@ const isAuthenticated = (req, res, next) => {
 };
 
 const isAdmin = (req, res, next) => {
-    console.log('Admin check:', req.session); // Debug log
-    
-    if (req.session && req.session.user && req.session.user.role === 'admin') {
-        return next();
+    // Check if user is logged in
+    if (!req.session || !req.session.user) {
+        if (req.xhr) {
+            return res.status(401).json({ error: 'Please login first' });
+        }
+        return res.redirect('/auth/login');
     }
-    
-    res.redirect('/auth/login');
+
+    // Check if user has admin role
+    if (req.session.user.role !== 'admin') {
+        if (req.xhr) {
+            return res.status(403).json({ error: 'Admin access required' });
+        }
+        return res.redirect('/dashboard');
+    }
+
+    next();
 };
 
 const redirectIfAuthenticated = (req, res, next) => {

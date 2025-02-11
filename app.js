@@ -8,6 +8,9 @@ const fs = require('fs');
 const transcribeRoutes = require('./routes/transcribe');
 const multer = require('multer');
 const dashboardRoutes = require('./routes/dashboard');
+const adminPlanRoutes = require('./routes/admin/plans');
+// const adminDashboardRoutes = require('./routes/admin/dashboard');
+const { isAdmin } = require('./middleware/auth');
 
 require('dotenv').config();
 
@@ -36,6 +39,8 @@ app.use(ejsLayouts);
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.set('layout', 'layouts/main');
+app.use('/admin', adminPlanRoutes);
+
 
 app.use((req, res, next) => {
     // Set default template variables
@@ -116,6 +121,8 @@ app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 app.use('/gbp', gbpRoutes);
 app.use('/image-caption', imageCaptionRoutes);
 app.use(documentResumeRoute);
+app.use('/admin/plans', isAdmin, adminPlanRoutes);
+// app.use('/admin/dashboard', isAdmin, adminDashboardRoutes);
 
 // Handle 404
 app.use((req, res) => {

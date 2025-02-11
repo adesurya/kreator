@@ -34,6 +34,32 @@ class User {
             [role, userId]
         );
     }
+
+    tatic async isAdmin(userId) {
+        try {
+            const [rows] = await db.execute(
+                'SELECT role FROM users WHERE id = ?',
+                [userId]
+            );
+            return rows.length > 0 && rows[0].role === 'admin';
+        } catch (error) {
+            console.error('Error checking admin status:', error);
+            return false;
+        }
+    }
+
+    static async getAdminUsers() {
+        try {
+            const [rows] = await db.execute(
+                'SELECT id, username, email FROM users WHERE role = ?',
+                ['admin']
+            );
+            return rows;
+        } catch (error) {
+            console.error('Error getting admin users:', error);
+            return [];
+        }
+    }
 }
 
 module.exports = User;

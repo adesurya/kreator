@@ -1,0 +1,290 @@
+<!-- views/admin/plans.ejs -->
+<%- contentFor('body') %>
+<div class="container mx-auto px-4 py-8">
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <!-- Header with Add Plan Button -->
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold text-gray-900">Plan Management</h1>
+            <button onclick="openPlanModal()"
+                    class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                Add New Plan
+            </button>
+        </div>
+
+        <!-- Plans Table -->
+        <div class="overflow-x-auto">
+            <table class="min-w-full">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Name
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Price
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Duration (Days)
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Subscribers
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Status
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Actions
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200" id="plansTableBody">
+                    <% plans.forEach(plan => { %>
+                        <tr data-plan-id="<%= plan.id %>">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                <%= plan.name %>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                Rp <%= plan.price.toLocaleString('id-ID') %>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <%= plan.duration %>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <%= plan.subscriber_count %>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                                    <%= plan.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' %>">
+                                    <%= plan.is_active ? 'Active' : 'Inactive' %>
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <button onclick="editPlan(<%= plan.id %>)" 
+                                        class="text-blue-600 hover:text-blue-900 mr-4">
+                                    Edit
+                                </button>
+                                <button onclick="deletePlan(<%= plan.id %>)"
+                                        class="text-red-600 hover:text-red-900"
+                                        <%= plan.subscriber_count > 0 ? 'disabled' : '' %>>
+                                    Delete
+                                </button>
+                            </td>
+                        </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Plan Modal -->
+<div id="planModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+    <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4">
+        <h2 id="modalTitle" class="text-2xl font-bold mb-6">Add New Plan</h2>
+        
+        <form id="planForm" onsubmit="savePlan(event)" class="space-y-4">
+            <input type="hidden" id="planId">
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Plan Name</label>
+                <input type="text" id="planName" 
+                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                       required>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Price (Rp)</label>
+                <input type="number" id="planPrice" min="0"
+                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                       required>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Duration (Days)</label>
+                <input type="number" id="planDuration" min="1"
+                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                       required>
+            </div>
+
+            <div id="statusToggle" class="hidden">
+                <label class="flex items-center">
+                    <input type="checkbox" id="planStatus" 
+                           class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <span class="ml-2 text-sm text-gray-600">Active</span>
+                </label>
+            </div>
+
+            <div class="flex justify-end space-x-4 mt-6">
+                <button type="button" onclick="closePlanModal()"
+                        class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                    Cancel
+                </button>
+                <button type="submit"
+                        class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                    Save
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<%- contentFor('script') %>
+<script>
+function openPlanModal(isEdit = false) {
+    document.getElementById('modalTitle').textContent = isEdit ? 'Edit Plan' : 'Add New Plan';
+    document.getElementById('statusToggle').style.display = isEdit ? 'block' : 'none';
+    document.getElementById('planModal').classList.remove('hidden');
+}
+
+function closePlanModal() {
+    document.getElementById('planModal').classList.add('hidden');
+    document.getElementById('planForm').reset();
+    document.getElementById('planId').value = '';
+}
+
+async function savePlan(event) {
+    event.preventDefault();
+    
+    const planId = document.getElementById('planId').value;
+    const data = {
+        name: document.getElementById('planName').value,
+        price: Number(document.getElementById('planPrice').value),
+        duration: Number(document.getElementById('planDuration').value),
+        is_active: document.getElementById('planStatus').checked
+    };
+
+    try {
+        const url = planId ? `/admin/plans/${planId}` : '/admin/plans';
+        const method = planId ? 'PUT' : 'POST';
+        
+        const response = await fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+        
+        if (result.success) {
+            showNotification('Plan saved successfully');
+            location.reload();
+        } else {
+            throw new Error(result.error || 'Failed to save plan');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showNotification(error.message, 'error');
+    }
+}
+
+async function editPlan(planId) {
+    try {
+        const response = await fetch(`/admin/plans/${planId}`);
+        const data = await response.json();
+        
+        if (data.plan) {
+            document.getElementById('planId').value = data.plan.id;
+            document.getElementById('planName').value = data.plan.name;
+            document.getElementById('planPrice').value = data.plan.price;
+            document.getElementById('planDuration').value = data.plan.duration;
+            document.getElementById('planStatus').checked = data.plan.is_active;
+            
+            openPlanModal(true);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showNotification('Failed to load plan details', 'error');
+    }
+}
+
+async function deletePlan(planId) {
+    if (!confirm('Are you sure you want to delete this plan?')) return;
+    
+    try {
+        const response = await fetch(`/admin/plans/${planId}`, {
+            method: 'DELETE'
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            document.querySelector(`tr[data-plan-id="${planId}"]`).remove();
+            showNotification('Plan deleted successfully');
+        } else {
+            throw new Error(data.error || 'Failed to delete plan');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showNotification(error.message, 'error');
+    }
+}
+
+function showNotification(message, type = 'success') {
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
+        type === 'success' ? 'bg-green-500' : 'bg-red-500'
+    } text-white`;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    setTimeout(() => notification.remove(), 5000);
+}
+
+// Handle modal close on outside click
+document.getElementById('planModal').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) {
+        closePlanModal();
+    }
+});
+
+// Format price inputs
+document.getElementById('planPrice').addEventListener('input', function(e) {
+    // Remove non-numeric characters
+    let value = this.value.replace(/[^0-9]/g, '');
+    
+    // Format with thousand separator
+    if (value) {
+        value = parseInt(value).toLocaleString('id-ID');
+    }
+    
+    // Update displayed value
+    this.value = value;
+});
+
+// Auto-focus first input when modal opens
+document.getElementById('planModal').addEventListener('shown.bs.modal', function () {
+    document.getElementById('planName').focus();
+});
+
+// Initialize tooltips for disabled delete buttons
+document.querySelectorAll('button[disabled]').forEach(button => {
+    button.title = 'Cannot delete plan with active subscribers';
+});
+
+// Add keyboard shortcuts
+document.addEventListener('keydown', function(e) {
+    // Close modal on Escape
+    if (e.key === 'Escape' && !document.getElementById('planModal').classList.contains('hidden')) {
+        closePlanModal();
+    }
+    
+    // Open new plan modal on Ctrl/Cmd + N
+    if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+        e.preventDefault();
+        openPlanModal();
+    }
+});
+
+// Validate price input to ensure it's not negative
+document.getElementById('planPrice').addEventListener('change', function(e) {
+    if (this.value < 0) {
+        this.value = 0;
+    }
+});
+
+// Validate duration input to ensure it's at least 1 day
+document.getElementById('planDuration').addEventListener('change', function(e) {
+    if (this.value < 1) {
+        this.value = 1;
+    }
+});

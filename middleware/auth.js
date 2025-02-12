@@ -1,48 +1,36 @@
+// middleware/auth.js
 const isAuthenticated = (req, res, next) => {
     console.log('Session check:', req.session); // Debug log
-    
     if (req.session && req.session.userId) {
         return next();
     }
-    
-    // Store intended URL
-    req.session.returnTo = req.originalUrl;
     res.redirect('/auth/login');
 };
 
 const isAdmin = (req, res, next) => {
-    console.log('Admin check:', {
-        session: req.session,
-        user: req.session?.user,
-        role: req.session?.user?.role
-    });
+    try {
+        console.log('Admin check:', {
+            session: req.session,
+            user: req.session?.user,
+            role: req.session?.user?.role
+        });
 
-    if (!req.session || !req.session.user) {
-        console.log('No session or user');
-        return res.redirect('/auth/login');
-    }
-
-    if (req.session.user.role !== 'admin') {
-        console.log('User is not admin');
-        return res.redirect('/dashboard');
-    }
-
-    console.log('Admin access granted');
-    next();
-};
-
-const redirectIfAuthenticated = (req, res, next) => {
-    if (req.session && req.session.userId) {
-        if (req.session.user.role === 'admin') {
-            return res.redirect('/admin/dashboard');
+        if (!req.session || !req.session.user) {
+            return res.redirect('/auth/login');
         }
-        return res.redirect('/dashboard');
+
+        if (req.session.user.role !== 'admin') {
+            return res.redirect('/dashboard');
+        }
+
+        next();
+    } catch (error) {
+        console.error('Auth middleware error:', error);
+        res.status(500).render('error', {
+            error: 'Authentication error',
+            user: null
+        });
     }
-    next();
 };
 
-module.exports = { 
-    isAuthenticated, 
-    isAdmin,
-    redirectIfAuthenticated 
-};
+module.exports = { isAuthenticated, isAdmin };

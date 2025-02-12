@@ -78,26 +78,47 @@ const authController = {
     postLogin: async (req, res) => {
         try {
             const { email, password } = req.body;
-            const user = await User.findByEmail(email);
-
-            if (!user || !(await User.verifyPassword(password, user.password))) {
-                return res.render('auth/login', { error: 'Invalid credentials' });
+            const [users] = await db.execute(
+                'SELECT * FROM users WHERE email = ?',
+                [email]
+            );
+            
+            const user = users[0];
+            console.log('Login attempt:', { email, userFound: !!user }); // Debug log
+    
+            if (!user || !(await bcrypt.compare(password, user.password))) {
+                return res.render('auth/login', { 
+                    error: 'Invalid credentials',
+                    style: '',
+                    script: '',
+                    user: null
+                });
             }
-
+    
             req.session.userId = user.id;
             req.session.user = {
                 id: user.id,
                 username: user.username,
+                email: user.email,
                 role: user.role
             };
-
+    
+            console.log('Session set:', req.session); // Debug log
+    
             if (user.role === 'admin') {
-                res.redirect('/admin/dashboard');
+                console.log('Redirecting to admin dashboard'); // Debug log
+                return res.redirect('/admin/dashboard');
             } else {
-                res.redirect('/dashboard');
+                return res.redirect('/dashboard');
             }
         } catch (error) {
-            res.render('auth/login', { error: 'Login failed' });
+            console.error('Login error:', error);
+            res.render('auth/login', { 
+                error: 'Login failed',
+                style: '',
+                script: '',
+                user: null
+            });
         }
     },
 

@@ -12,7 +12,6 @@ const adminPlanRoutes = require('./routes/admin/plans');
 const adminTransactionRoutes = require('./routes/admin/transactions.js');
 const adminDashboardRoutes = require('./routes/admin/dashboard');
 
-
 const { isAdmin } = require('./middleware/auth');
 
 require('dotenv').config();
@@ -42,8 +41,6 @@ app.use(ejsLayouts);
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.set('layout', 'layouts/main');
-app.use('/admin', adminPlanRoutes);
-
 
 app.use((req, res, next) => {
     // Set default template variables
@@ -77,10 +74,10 @@ app.use((req, res, next) => {
 const authRoutes = require('./routes/auth');
 const chatRoutes = require('./routes/chat');
 const adminRoutes = require('./routes/admin');
-const idekreatorRoutes = require('./routes/idekreator');  // Tambahkan ini
+const idekreatorRoutes = require('./routes/idekreator');
 const imageGeneratorRoutes = require('./routes/imageGenerator');
 const documentResumeRoute = require('./routes/documentResume');
-const gbpRoutes = require('./routes/gbp');  // Import GBP routes
+const gbpRoutes = require('./routes/gbp');
 const imageCaptionRoutes = require('./routes/imageCaption');
 const landingRoutes = require('./routes/landing');
 
@@ -88,12 +85,6 @@ const tempDir = path.join(__dirname, 'temp');
 if (!fs.existsSync(tempDir)){
     fs.mkdirSync(tempDir);
 }
-// Use routes
-
-//app.use('/', landingRoutes); // Set landing page as root
-
-
-
 
 // Root route
 app.get('/', (req, res) => {
@@ -112,10 +103,10 @@ app.get('/', (req, res) => {
     });
 });
 
-app.use('/auth', authRoutes);  // Auth routes harus di atas
+app.use('/auth', authRoutes);  // Auth routes 
 app.use('/dashboard', dashboardRoutes);
 app.use('/chat', chatRoutes);
-app.use('/admin', adminRoutes);
+// HAPUS ATAU COMMENT INI app.use('/admin', adminRoutes);
 app.use('/idekreator', idekreatorRoutes);
 app.use('/planner', plannerRoutes);
 app.use('/transcribe', transcribeRoutes);
@@ -125,11 +116,10 @@ app.use('/gbp', gbpRoutes);
 app.use('/image-caption', imageCaptionRoutes);
 app.use(documentResumeRoute);
 
-//admin route
+// Admin routes - pastikan ini ditaruh sebelum route lain yang menggunakan /admin
 app.use('/admin/dashboard', isAdmin, adminDashboardRoutes);
 app.use('/admin/plans', isAdmin, adminPlanRoutes);
 app.use('/admin/transactions', isAdmin, adminTransactionRoutes);
-
 
 // Handle 404
 app.use((req, res) => {
@@ -142,7 +132,6 @@ app.use((req, res) => {
     });
 });
 
-
 // Error handler
 app.use((err, req, res, next) => {
     console.error('Error:', {
@@ -152,50 +141,24 @@ app.use((err, req, res, next) => {
         method: req.method,
         body: req.body
     });
-        res.status(500).render('auth/login', { 
-        error: 'Something went wrong. Please try again.'
-    });
 
-    if (req.xhr || req.headers.accept.includes('json')) {
+    // For XHR/API requests
+    if (req.xhr || req.headers.accept?.includes('json')) {
         return res.status(500).json({ error: err.message || 'Internal server error' });
     }
 
-    res.status(500).render('error', { error: err.message || 'Internal server error' });
-
-
-    if (err instanceof multer.MulterError) {
-        if (err.code === 'LIMIT_FILE_SIZE') {
-            return res.status(400).json({
-                error: 'File size too large. Maximum size is 30MB'
-            });
-        }
-        return res.status(400).json({
-            error: 'File upload error: ' + err.message
-        });
-    }
-
-    const statusCode = err.statusCode || 500;
-    const message = process.env.NODE_ENV === 'production' 
-        ? 'Internal Server Error' 
-        : err.message;
-
-    res.status(statusCode).render('error', {
+    // For web pages
+    res.status(500).render('error', {
         layout: 'layouts/error',
         error: {
-            status: statusCode,
-            message: message,
+            status: 500,
+            message: process.env.NODE_ENV === 'production' ? 'Internal Server Error' : err.message,
             stack: process.env.NODE_ENV === 'production' ? null : err.stack
         }
     });
-    next(err);
 });
 
-app._router.stack.forEach(function(r){
-    if (r.route && r.route.path){
-        console.log('Route:', r.route.path)
-    }
-});
-
+// Cleanup uploaded files periodically
 setInterval(() => {
     fs.readdir(uploadsDir, (err, files) => {
         if (err) throw err;
@@ -208,7 +171,16 @@ setInterval(() => {
     });
 }, 3600000); 
 
+// Start server
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
+    
+    // Debug: Log all registered routes
+    console.log('\nRegistered Routes:');
+    app._router.stack.forEach(r => {
+        if (r.route && r.route.path) {
+            console.log(`${Object.keys(r.route.methods).join(',')} ${r.route.path}`);
+        }
+    });
 });

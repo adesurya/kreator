@@ -69,15 +69,16 @@
                         <% if (locals.user.role === 'admin') { %>
                             <div class="relative group">
                                 <button class="flex items-center text-gray-700 hover:text-blue-500 px-3 py-2">
-                                    <span>Admin</span>
+                                    <span>Admin Menu</span>
                                     <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                                     </svg>
                                 </button>
                                 <div class="absolute left-0 hidden group-hover:block w-48 bg-white shadow-lg rounded-md py-1">
-                                    <a href="/admin/dashboard" class="block px-4 py-2 text-gray-700 hover:bg-blue-50">Dashboard</a>
-                                    <a href="/admin/users" class="block px-4 py-2 text-gray-700 hover:bg-blue-50">Users</a>
-                                    <a href="/admin/settings" class="block px-4 py-2 text-gray-700 hover:bg-blue-50">Settings</a>
+                                    <a href="/admin/dashboard" class="block px-6 py-2 text-gray-600 hover:bg-gray-100">Dashboard</a>
+                                    <a href="/admin/plans" class="block px-6 py-2 text-gray-600 hover:bg-gray-100">Manage Plans</a>
+                                    <a href="/admin/transactions" class="block px-6 py-2 text-gray-600 hover:bg-gray-100">Transactions</a>
+                                    <a href="/admin/users" class="block px-6 py-2 text-gray-600 hover:bg-gray-100">Users</a>
                                 </div>
                             </div>
                         <% } %>
@@ -161,20 +162,20 @@
                 <!-- Chat Menu -->
                 <a href="/chat" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Chat</a>
     
-                <!-- Admin Section -->
-                <% if (locals.user.role === 'admin') { %>
-                    <div class="mobile-menu-section">
+                <!-- Admin Menu -->
+                <% if (locals.user && locals.user.role === 'admin') { %>
+                    <div class="relative group">
                         <button class="mobile-menu-trigger w-full flex justify-between items-center px-4 py-2 text-gray-700">
-                            <span>Admin</span>
+                            <span>Admin Menu</span>
                             <svg class="w-4 h-4 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                             </svg>
                         </button>
                         <div class="mobile-submenu hidden bg-gray-50 py-2">
                             <a href="/admin/dashboard" class="block px-6 py-2 text-gray-600 hover:bg-gray-100">Dashboard</a>
+                            <a href="/admin/plans" class="block px-6 py-2 text-gray-600 hover:bg-gray-100">Manage Plans</a>
+                            <a href="/admin/transactions" class="block px-6 py-2 text-gray-600 hover:bg-gray-100">Transactions</a>
                             <a href="/admin/users" class="block px-6 py-2 text-gray-600 hover:bg-gray-100">Users</a>
-                            <a href="/admin/settings" class="block px-6 py-2 text-gray-600 hover:bg-gray-100">Settings</a>
-                            <a href="/admin/plans" class="nav-link"> <span>Plan Management</span> </a>
                         </div>
                     </div>
                 <% } %>

@@ -9,7 +9,10 @@ const transcribeRoutes = require('./routes/transcribe');
 const multer = require('multer');
 const dashboardRoutes = require('./routes/dashboard');
 const adminPlanRoutes = require('./routes/admin/plans');
-// const adminDashboardRoutes = require('./routes/admin/dashboard');
+const adminTransactionRoutes = require('./routes/admin/transactions.js');
+const adminDashboardRoutes = require('./routes/admin/dashboard');
+
+
 const { isAdmin } = require('./middleware/auth');
 
 require('dotenv').config();
@@ -121,8 +124,12 @@ app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 app.use('/gbp', gbpRoutes);
 app.use('/image-caption', imageCaptionRoutes);
 app.use(documentResumeRoute);
+
+//admin route
+app.use('/admin/dashboard', isAdmin, adminDashboardRoutes);
 app.use('/admin/plans', isAdmin, adminPlanRoutes);
-// app.use('/admin/dashboard', isAdmin, adminDashboardRoutes);
+app.use('/admin/transactions', isAdmin, adminTransactionRoutes);
+
 
 // Handle 404
 app.use((req, res) => {
@@ -138,10 +145,23 @@ app.use((req, res) => {
 
 // Error handler
 app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).render('auth/login', { 
+    console.error('Error:', {
+        message: err.message,
+        stack: err.stack,
+        path: req.path,
+        method: req.method,
+        body: req.body
+    });
+        res.status(500).render('auth/login', { 
         error: 'Something went wrong. Please try again.'
     });
+
+    if (req.xhr || req.headers.accept.includes('json')) {
+        return res.status(500).json({ error: err.message || 'Internal server error' });
+    }
+
+    res.status(500).render('error', { error: err.message || 'Internal server error' });
+
 
     if (err instanceof multer.MulterError) {
         if (err.code === 'LIMIT_FILE_SIZE') {
@@ -168,6 +188,12 @@ app.use((err, req, res, next) => {
         }
     });
     next(err);
+});
+
+app._router.stack.forEach(function(r){
+    if (r.route && r.route.path){
+        console.log('Route:', r.route.path)
+    }
 });
 
 setInterval(() => {

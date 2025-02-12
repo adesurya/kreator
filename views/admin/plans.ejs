@@ -147,9 +147,9 @@ async function savePlan(event) {
     const planId = document.getElementById('planId').value;
     const data = {
         name: document.getElementById('planName').value,
-        price: Number(document.getElementById('planPrice').value),
+        price: document.getElementById('planPrice').value,
         duration: Number(document.getElementById('planDuration').value),
-        is_active: document.getElementById('planStatus').checked
+        is_active: document.getElementById('planStatus')?.checked ?? true
     };
 
     try {
@@ -159,16 +159,22 @@ async function savePlan(event) {
         const response = await fetch(url, {
             method: method,
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
             },
             body: JSON.stringify(data)
         });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to save plan');
+        }
 
         const result = await response.json();
         
         if (result.success) {
             showNotification('Plan saved successfully');
-            location.reload();
+            setTimeout(() => location.reload(), 1000);
         } else {
             throw new Error(result.error || 'Failed to save plan');
         }
@@ -181,14 +187,18 @@ async function savePlan(event) {
 async function editPlan(planId) {
     try {
         const response = await fetch(`/admin/plans/${planId}`);
+        if (!response.ok) {
+            throw new Error('Failed to load plan details');
+        }
+        
         const data = await response.json();
         
         if (data.plan) {
             document.getElementById('planId').value = data.plan.id;
             document.getElementById('planName').value = data.plan.name;
-            document.getElementById('planPrice').value = data.plan.price;
+            document.getElementById('planPrice').value = data.plan.price.toLocaleString('id-ID');
             document.getElementById('planDuration').value = data.plan.duration;
-            document.getElementById('planStatus').checked = data.plan.is_active;
+            document.getElementById('planStatus').checked = Boolean(data.plan.is_active);
             
             openPlanModal(true);
         }
@@ -203,9 +213,17 @@ async function deletePlan(planId) {
     
     try {
         const response = await fetch(`/admin/plans/${planId}`, {
-            method: 'DELETE'
+            method: 'DELETE',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
         });
         
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to delete plan');
+        }
+
         const data = await response.json();
         
         if (data.success) {

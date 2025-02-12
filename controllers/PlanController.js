@@ -22,7 +22,10 @@ const planController = {
     // Create new plan
     createPlan: async (req, res) => {
         try {
-            const { name, price, duration } = req.body;
+            let { name, price, duration } = req.body;
+            
+            // Convert price from formatted string to number
+            price = Number(price.replace(/[^0-9]/g, ''));
 
             // Validation
             if (!name || !price || !duration) {
@@ -32,8 +35,8 @@ const planController = {
             }
 
             const [result] = await db.execute(
-                'INSERT INTO plans (name, price, duration) VALUES (?, ?, ?)',
-                [name, price, duration]
+                'INSERT INTO plans (name, price, duration, is_active) VALUES (?, ?, ?, ?)',
+                [name, price, duration, true]
             );
 
             res.json({
@@ -57,7 +60,10 @@ const planController = {
     updatePlan: async (req, res) => {
         try {
             const { id } = req.params;
-            const { name, price, duration, is_active } = req.body;
+            let { name, price, duration, is_active } = req.body;
+            
+            // Convert price from formatted string to number
+            price = Number(price.replace(/[^0-9]/g, ''));
 
             // Validation
             if (!name || !price || !duration) {

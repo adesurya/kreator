@@ -1,5 +1,6 @@
 const User = require('../models/user');
-
+const db = require('../../config/database');
+ 
 const adminController = {
     async dashboard(req, res) {
         try {

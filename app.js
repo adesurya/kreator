@@ -15,6 +15,8 @@ const profileRoutes = require('./routes/profile');
 const contactRoutes = require('./routes/contact');
 const documentationRoutes = require('./routes/documentation');
 const dashboardController = require('./controllers/dashboardController');
+const db = require('./config/database');
+const PaymentService = require('./services/PaymentService');
 
 
 const { checkSubscription } = require('./middleware/subscriptionCheck');

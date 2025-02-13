@@ -13,6 +13,10 @@ const adminTransactionRoutes = require('./routes/admin/transactions.js');
 const adminDashboardRoutes = require('./routes/admin/dashboard');
 const profileRoutes = require('./routes/profile');
 const contactRoutes = require('./routes/contact');
+const documentationRoutes = require('./routes/documentation');
+const dashboardController = require('./controllers/dashboardController');
+
+
 const { checkSubscription } = require('./middleware/subscriptionCheck');
 const { isAuthenticated } = require('./middleware/auth');
 const { isAdmin } = require('./middleware/auth');
@@ -95,7 +99,8 @@ app.get('/', (req, res) => {
         if (req.session.user.role === 'admin') {
             return res.redirect('/admin/dashboard');
         }
-        return res.redirect('/dashboard');
+        // Check subscription before redirecting to dashboard
+        return res.redirect('/pricing');
     }
     res.render('landing/index', {
         layout: 'layouts/landing',
@@ -107,7 +112,7 @@ app.get('/', (req, res) => {
 });
 
 app.use('/auth', authRoutes);  // Auth routes 
-app.use('/dashboard', dashboardRoutes);
+app.use('/dashboard', isAuthenticated, checkSubscription, dashboardRoutes);
 app.use('/chat', isAuthenticated, checkSubscription, chatRoutes);
 app.use('/idekreator', isAuthenticated, checkSubscription, idekreatorRoutes);
 app.use('/planner', isAuthenticated, checkSubscription, plannerRoutes);
@@ -146,6 +151,7 @@ app.use('/admin/transactions', isAdmin, adminTransactionRoutes);
 
 app.use('/profile', profileRoutes);
 app.use('/contact', contactRoutes);
+app.use('/documentation', documentationRoutes);
 
 // Handle 404
 app.use((req, res) => {

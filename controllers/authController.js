@@ -4,43 +4,23 @@ const postLogin = async (req, res) => {
     try {
         const { email, password } = req.body;
         
-        // Query user dari database
         const [users] = await db.execute(
             'SELECT * FROM users WHERE email = ?',
             [email]
         );
         
         const user = users[0];
-        
-        // Debug log
         console.log('Login attempt:', { email, userFound: !!user });
 
-        // Jika user tidak ditemukan
-        if (!user) {
+        if (!user || !(await bcrypt.compare(password, user.password))) {
             return res.render('auth/login', { 
-                error: 'Invalid email or password',
+                error: 'Invalid credentials',
                 style: '',
                 script: '',
                 user: null
             });
         }
 
-        // Verifikasi password
-        const isValidPassword = await bcrypt.compare(password, user.password);
-        
-        // Debug log
-        console.log('Password verification:', { isValid: isValidPassword });
-
-        if (!isValidPassword) {
-            return res.render('auth/login', { 
-                error: 'Invalid email or password',
-                style: '',
-                script: '',
-                user: null
-            });
-        }
-
-        // Set session
         req.session.userId = user.id;
         req.session.user = {
             id: user.id,
@@ -49,20 +29,28 @@ const postLogin = async (req, res) => {
             role: user.role
         };
 
-        // Debug log
-        console.log('Session set:', req.session);
-
-        // Redirect berdasarkan role dengan return
+        // Check subscription status after successful login
         if (user.role === 'admin') {
             return res.redirect('/admin/dashboard');
-        } else {
-            return res.redirect('/dashboard');
         }
 
+        const [subscriptions] = await db.execute(
+            `SELECT * FROM user_subscriptions 
+             WHERE user_id = ? 
+             AND is_active = true 
+             AND end_date > CURRENT_TIMESTAMP()`,
+            [user.id]
+        );
+
+        if (subscriptions.length === 0) {
+            return res.redirect('/pricing');
+        }
+
+        return res.redirect('/dashboard');
     } catch (error) {
         console.error('Login error:', error);
         res.render('auth/login', { 
-            error: 'Login failed. Please try again.',
+            error: 'Login failed',
             style: '',
             script: '',
             user: null

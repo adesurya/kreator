@@ -1,0 +1,213 @@
+<%- contentFor('body') %>
+<div class="min-h-screen bg-gray-50">
+    <!-- Navigation Sidebar -->
+    <div class="fixed inset-0 flex z-40 lg:hidden" role="dialog" aria-modal="true" id="mobile-nav">
+        <!-- Sidebar backdrop -->
+        <div class="fixed inset-0 bg-gray-600 bg-opacity-75" aria-hidden="true"></div>
+        
+        <!-- Sidebar panel -->
+        <div class="relative flex-1 flex flex-col max-w-xs w-full bg-white focus:outline-none">
+            <div class="flex-1 h-0 pt-5 pb-4 overflow-y-auto">
+                <nav class="mt-5 px-2 space-y-1" id="mobile-menu">
+                    <% sections.forEach(section => { %>
+                        <div class="space-y-1">
+                            <button class="doc-section-button w-full flex items-center px-4 py-2 text-sm font-medium text-gray-900 hover:bg-gray-100 rounded-lg" data-section="<%= section.id %>">
+                                <span class="truncate"><%= section.title %></span>
+                            </button>
+                            
+                            <div class="doc-subsections ml-4 space-y-1 hidden">
+                                <% section.sections.forEach(subsection => { %>
+                                    <a href="#<%= subsection.id %>" class="group flex items-center px-4 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg">
+                                        <%= subsection.title %>
+                                    </a>
+                                <% }); %>
+                            </div>
+                        </div>
+                    <% }); %>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <!-- Desktop Layout -->
+    <div class="flex">
+        <!-- Desktop Sidebar -->
+        <div class="hidden lg:flex lg:flex-shrink-0">
+            <div class="flex flex-col w-64 border-r border-gray-200 bg-white">
+                <!-- Search -->
+                <div class="px-6 pt-6 pb-4">
+                    <div class="relative">
+                        <input type="text" 
+                               id="search-docs"
+                               placeholder="Search documentation..."
+                               class="block w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                </div>
+
+                <!-- Navigation -->
+                <nav class="flex-1 px-4 pb-4 space-y-1 overflow-y-auto">
+                    <% sections.forEach(section => { %>
+                        <div class="space-y-1">
+                            <button class="doc-section-button w-full flex items-center px-4 py-2 text-sm font-medium text-gray-900 hover:bg-gray-100 rounded-lg" data-section="<%= section.id %>">
+                                <span class="truncate"><%= section.title %></span>
+                            </button>
+                            
+                            <div class="doc-subsections ml-4 space-y-1 hidden">
+                                <% section.sections.forEach(subsection => { %>
+                                    <a href="#<%= subsection.id %>" class="group flex items-center px-4 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg">
+                                        <%= subsection.title %>
+                                    </a>
+                                <% }); %>
+                            </div>
+                        </div>
+                    <% }); %>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1">
+            <div class="max-w-4xl mx-auto px-4 py-8">
+                <% sections.forEach(section => { %>
+                    <div class="mb-12">
+                        <h2 class="text-3xl font-bold text-gray-900 mb-6" id="<%= section.id %>">
+                            <%= section.title %>
+                        </h2>
+                        
+                        <% section.sections.forEach(subsection => { %>
+                            <div class="mb-8">
+                                <h3 class="text-2xl font-semibold text-gray-900 mb-4" id="<%= subsection.id %>">
+                                    <%= subsection.title %>
+                                </h3>
+                                
+                                <div class="prose prose-blue max-w-none">
+                                    <%- subsection.content %>
+                                </div>
+                            </div>
+                        <% }); %>
+                    </div>
+                <% }); %>
+            </div>
+        </div>
+
+        <!-- Table of Contents -->
+        <div class="hidden xl:block xl:flex-shrink-0 xl:w-64">
+            <div class="h-full px-4 py-6 bg-white border-l border-gray-200">
+                <h4 class="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-3">
+                    On this page
+                </h4>
+                <nav class="space-y-1" id="table-of-contents">
+                    <!-- Will be populated by JavaScript -->
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- contentFor('script') %>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // Toggle sections
+    document.querySelectorAll('.doc-section-button').forEach(button => {
+        button.addEventListener('click', () => {
+            const subsections = button.nextElementSibling;
+            subsections.classList.toggle('hidden');
+        });
+    });
+
+    // Search functionality
+    const searchInput = document.getElementById('search-docs');
+    let searchTimeout;
+
+    searchInput.addEventListener('input', (e) => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(async () => {
+            const query = e.target.value;
+            if (query.length < 3) return;
+
+            try {
+                const response = await fetch(`/documentation/search?q=${encodeURIComponent(query)}`);
+                const results = await response.json();
+                updateSearchResults(results);
+            } catch (error) {
+                console.error('Search error:', error);
+            }
+        }, 300);
+    });
+
+    // Table of Contents
+    const toc = document.getElementById('table-of-contents');
+    const headings = document.querySelectorAll('h2, h3');
+
+    headings.forEach(heading => {
+        const link = document.createElement('a');
+        link.href = `#${heading.id}`;
+        link.className = `${
+            heading.tagName === 'H2' 
+                ? 'block py-2 text-sm font-medium text-gray-900 hover:text-blue-600' 
+                : 'block py-2 pl-4 text-sm text-gray-600 hover:text-blue-600'
+        }`;
+        link.textContent = heading.textContent;
+        toc.appendChild(link);
+
+        // Intersection Observer for active state
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                if (entry.isIntersecting) {
+                    document.querySelectorAll('#table-of-contents a').forEach(a => {
+                        a.classList.remove('text-blue-600');
+                    });
+                    link.classList.add('text-blue-600');
+                }
+            },
+            { threshold: 0.5 }
+        );
+
+        observer.observe(heading);
+    });
+
+    // Smooth scroll
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', (e) => {
+            e.preventDefault();
+            const target = document.querySelector(anchor.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    });
+});
+
+function updateSearchResults(results) {
+    // Implementation of search results UI update
+}
+</script>
+
+<%- contentFor('style') %>
+<style>
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.prose {
+    animation: fadeIn 0.3s ease-out;
+}
+
+.doc-section-button {
+    transition: all 0.2s ease;
+}
+
+.doc-section-button:hover {
+    transform: translateX(4px);
+}
+
+@media (max-width: 768px) {
+    .prose {
+        font-size: 0.9375rem;
+    }
+}
+</style>

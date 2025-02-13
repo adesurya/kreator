@@ -76,4 +76,39 @@ app.get('/payment/return', isAuthenticated, async (req, res) => {
         res.redirect('/pricing');
     }
 });
+
+app.use('/pricing', isAuthenticated, async (req, res) => {
+    try {
+        // Get current subscription
+        const [currentSubscription] = await db.execute(
+            `SELECT s.*, p.name as plan_name, p.price, p.duration
+             FROM user_subscriptions s
+             JOIN plans p ON s.plan_id = p.id
+             WHERE s.user_id = ? 
+             AND s.is_active = true 
+             AND s.end_date > CURRENT_TIMESTAMP()
+             ORDER BY s.end_date DESC
+             LIMIT 1`,
+            [req.session.userId]
+        );
+
+        // Get all active plans
+        const [plans] = await db.execute(
+            'SELECT * FROM plans WHERE is_active = 1 ORDER BY price ASC'
+        );
+
+        res.render('pricing/index', {
+            user: req.session.user,
+            plans: plans,
+            currentSubscription: currentSubscription[0] || null,
+            paymentMethods: PaymentService.PAYMENT_METHODS
+        });
+    } catch (error) {
+        console.error('Error loading plans:', error);
+        res.status(500).render('error', { 
+            error: 'Failed to load plans',
+            user: req.session.user
+        });
+    }
+});
 module.exports = router;

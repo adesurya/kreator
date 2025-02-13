@@ -10,27 +10,21 @@ const checkSubscription = async (req, res, next) => {
     try {
         // Check for active subscription
         const [subscriptions] = await db.execute(
-            `SELECT * FROM user_subscriptions 
-             WHERE user_id = ? 
-             AND is_active = true 
-             AND end_date > CURRENT_TIMESTAMP()
-             ORDER BY end_date DESC
+            `SELECT s.*, p.name as plan_name 
+             FROM user_subscriptions s
+             JOIN plans p ON s.plan_id = p.id
+             WHERE s.user_id = ? 
+             AND s.is_active = true 
+             AND s.end_date > CURRENT_TIMESTAMP()
+             ORDER BY s.end_date DESC
              LIMIT 1`,
             [req.session.userId]
         );
 
         if (subscriptions.length === 0) {
-            // No active subscription found
-            if (req.xhr) {
-                return res.status(403).json({ 
-                    error: 'Subscription required',
-                    redirectUrl: '/payment/plans'
-                });
-            }
-            
-            // Store intended URL for redirect after payment
+            // Store return URL for redirect after payment
             req.session.returnTo = req.originalUrl;
-            return res.redirect('/payment/plans');
+            return res.redirect('/pricing');
         }
 
         // Add subscription info to request
@@ -38,7 +32,10 @@ const checkSubscription = async (req, res, next) => {
         next();
     } catch (error) {
         console.error('Subscription check error:', error);
-        res.status(500).send('Error checking subscription');
+        res.status(500).render('error', { 
+            error: 'Error checking subscription',
+            user: req.session.user
+        });
     }
 };
 

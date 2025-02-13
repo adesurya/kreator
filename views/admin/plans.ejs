@@ -1,4 +1,3 @@
-<!-- views/admin/plans.ejs -->
 <%- contentFor('body') %>
 <div class="container mx-auto px-4 py-8">
     <div class="bg-white rounded-lg shadow-lg p-6">
@@ -10,6 +9,37 @@
                 Add New Plan
             </button>
         </div>
+
+        <!-- Alert Messages -->
+        <% if (error) { %>
+            <div class="mb-4 bg-red-100 border-l-4 border-red-500 p-4">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm text-red-700"><%= error %></p>
+                    </div>
+                </div>
+            </div>
+        <% } %>
+
+        <% if (success) { %>
+            <div class="mb-4 bg-green-100 border-l-4 border-green-500 p-4">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm text-green-700"><%= success %></p>
+                    </div>
+                </div>
+            </div>
+        <% } %>
 
         <!-- Plans Table -->
         <div class="overflow-x-auto">
@@ -93,7 +123,7 @@
 
             <div>
                 <label class="block text-sm font-medium text-gray-700">Price (Rp)</label>
-                <input type="number" id="planPrice" min="0"
+                <input type="text" id="planPrice" 
                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                        required>
             </div>
@@ -248,14 +278,7 @@ function showNotification(message, type = 'success') {
     setTimeout(() => notification.remove(), 5000);
 }
 
-// Handle modal close on outside click
-document.getElementById('planModal').addEventListener('click', (e) => {
-    if (e.target === e.currentTarget) {
-        closePlanModal();
-    }
-});
-
-// Format price inputs
+// Format price input to use thousand separators
 document.getElementById('planPrice').addEventListener('input', function(e) {
     // Remove non-numeric characters
     let value = this.value.replace(/[^0-9]/g, '');
@@ -269,14 +292,11 @@ document.getElementById('planPrice').addEventListener('input', function(e) {
     this.value = value;
 });
 
-// Auto-focus first input when modal opens
-document.getElementById('planModal').addEventListener('shown.bs.modal', function () {
-    document.getElementById('planName').focus();
-});
-
-// Initialize tooltips for disabled delete buttons
-document.querySelectorAll('button[disabled]').forEach(button => {
-    button.title = 'Cannot delete plan with active subscribers';
+// Handle modal close on outside click
+document.getElementById('planModal').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) {
+        closePlanModal();
+    }
 });
 
 // Add keyboard shortcuts
@@ -306,3 +326,5 @@ document.getElementById('planDuration').addEventListener('change', function(e) {
         this.value = 1;
     }
 });
+
+</script>

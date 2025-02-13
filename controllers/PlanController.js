@@ -1,4 +1,4 @@
-// controllers/PlanController.js
+// Updated PlanController.js
 const db = require('../config/database');
 
 const planController = {
@@ -11,18 +11,25 @@ const planController = {
             
             res.render('admin/plans', {
                 plans,
-                user: req.session.user
+                user: req.session.user,
+                error: null,
+                success: null
             });
         } catch (error) {
             console.error('Error loading plans:', error);
-            res.status(500).send('Failed to load plans');
+            res.status(500).render('admin/plans', { 
+                error: 'Failed to load plans',
+                plans: [],
+                user: req.session.user,
+                success: null
+            });
         }
     },
 
     // Create new plan
     createPlan: async (req, res) => {
         try {
-            let { name, price, duration } = req.body;
+            let { name, price, duration, is_active } = req.body;
             
             // Convert price from formatted string to number
             price = Number(price.replace(/[^0-9]/g, ''));
@@ -36,7 +43,7 @@ const planController = {
 
             const [result] = await db.execute(
                 'INSERT INTO plans (name, price, duration, is_active) VALUES (?, ?, ?, ?)',
-                [name, price, duration, true]
+                [name, price, duration, is_active ? 1 : 0]
             );
 
             res.json({
@@ -46,7 +53,7 @@ const planController = {
                     name,
                     price,
                     duration,
-                    is_active: 1,
+                    is_active: is_active ? 1 : 0,
                     subscriber_count: 0
                 }
             });

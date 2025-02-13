@@ -48,13 +48,13 @@ class PaymentService {
             customerVaName: user.username,
             callbackUrl: this.callbackUrl,
             returnUrl: this.returnUrl,
-            expiryPeriod: 60, // 1 hour expiry
+            expiryPeriod: 10,
             signature: signature
         };
 
         try {
             const response = await axios.post(
-                `${this.baseUrl}/v2/inquiry`,
+                `${this.baseUrl}/webapi/api/merchant/v2/inquiry`,
                 payload
             );
 
@@ -113,6 +113,7 @@ class PaymentService {
                     payment_date = CURRENT_TIMESTAMP,
                     settlement_date = ?,
                     publisher_order_id = ?,
+                    sp_user_hash = ?,
                     issuer_code = ?
                 WHERE merchant_order_id = ?`,
                 [
@@ -120,6 +121,7 @@ class PaymentService {
                     callbackData.resultCode,
                     callbackData.settlementDate || null,
                     callbackData.publisherOrderId || null,
+                    callbackData.spUserHash || null,
                     callbackData.issuerCode || null,
                     callbackData.merchantOrderId
                 ]
@@ -145,18 +147,9 @@ class PaymentService {
 
                         await connection.execute(
                             `INSERT INTO user_subscriptions 
-                            (user_id, plan_id, start_date, end_date, is_active) 
-                            VALUES (?, ?, ?, ?, 1)`,
+                            (user_id, plan_id, start_date, end_date) 
+                            VALUES (?, ?, ?, ?)`,
                             [txnRows[0].user_id, txnRows[0].plan_id, startDate, endDate]
-                        );
-
-                        // Deactivate any existing subscriptions
-                        await connection.execute(
-                            `UPDATE user_subscriptions 
-                             SET is_active = 0 
-                             WHERE user_id = ? 
-                             AND id != LAST_INSERT_ID()`,
-                            [txnRows[0].user_id]
                         );
                     }
                 }
@@ -179,7 +172,7 @@ class PaymentService {
 
         try {
             const response = await axios.post(
-                `${this.baseUrl}/v2/transactionStatus`,
+                `${this.baseUrl}/webapi/api/merchant/transactionStatus`,
                 {
                     merchantCode: this.merchantCode,
                     merchantOrderId: merchantOrderId,
@@ -187,45 +180,12 @@ class PaymentService {
                 }
             );
 
-            // Update local transaction status if needed
-            if (response.data.statusCode === '00' || response.data.statusCode === '01') {
-                await db.execute(
-                    `UPDATE transactions 
-                     SET status = ?, status_code = ?, payment_date = CURRENT_TIMESTAMP 
-                     WHERE merchant_order_id = ?`,
-                    [
-                        response.data.statusCode === '00' ? 'SUCCESS' : 'FAILED',
-                        response.data.statusCode,
-                        merchantOrderId
-                    ]
-                );
-            }
-
             return response.data;
         } catch (error) {
             console.error('Transaction status check error:', error);
             throw new Error('Failed to check transaction status');
         }
     }
-
-    async getUserActiveSubscription(userId) {
-        try {
-            const [subscriptions] = await db.execute(
-                `SELECT s.*, p.name as plan_name, p.price, p.duration
-                 FROM user_subscriptions s
-                 JOIN plans p ON s.plan_id = p.id
-                 WHERE s.user_id = ? 
-                 AND s.is_active = 1 
-                 AND s.end_date > CURRENT_TIMESTAMP
-                 ORDER BY s.end_date DESC
-                 LIMIT 1`,
-                [userId]
-            );
-
-            return subscriptions[0] || null;
-        } catch (error) {
-            console.error('Error getting user subscription:', error);
-            throw new Error('Failed to get user subscription');
-        }
-    }
 }
+
+module.exports = PaymentService;

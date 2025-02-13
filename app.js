@@ -11,7 +11,10 @@ const dashboardRoutes = require('./routes/dashboard');
 const adminPlanRoutes = require('./routes/admin/plans');
 const adminTransactionRoutes = require('./routes/admin/transactions.js');
 const adminDashboardRoutes = require('./routes/admin/dashboard');
-
+const profileRoutes = require('./routes/profile');
+const contactRoutes = require('./routes/contact');
+const { checkSubscription } = require('./middleware/subscriptionCheck');
+const { isAuthenticated } = require('./middleware/auth');
 const { isAdmin } = require('./middleware/auth');
 
 require('dotenv').config();
@@ -105,21 +108,44 @@ app.get('/', (req, res) => {
 
 app.use('/auth', authRoutes);  // Auth routes 
 app.use('/dashboard', dashboardRoutes);
-app.use('/chat', chatRoutes);
-// HAPUS ATAU COMMENT INI app.use('/admin', adminRoutes);
-app.use('/idekreator', idekreatorRoutes);
-app.use('/planner', plannerRoutes);
-app.use('/transcribe', transcribeRoutes);
-app.use('/image-generator', imageGeneratorRoutes);
+app.use('/chat', isAuthenticated, checkSubscription, chatRoutes);
+app.use('/idekreator', isAuthenticated, checkSubscription, idekreatorRoutes);
+app.use('/planner', isAuthenticated, checkSubscription, plannerRoutes);
+app.use('/transcribe', isAuthenticated, checkSubscription, transcribeRoutes);
+app.use('/image-generator', isAuthenticated, checkSubscription, imageGeneratorRoutes);
+app.use('/document-resume', isAuthenticated, checkSubscription, documentResumeRoute);
+app.use('/gbp', isAuthenticated, checkSubscription, gbpRoutes);
+app.use('/image-caption', isAuthenticated, checkSubscription, imageCaptionRoutes);
+
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
-app.use('/gbp', gbpRoutes);
-app.use('/image-caption', imageCaptionRoutes);
-app.use(documentResumeRoute);
+app.use('/pricing', isAuthenticated, async (req, res) => {
+    try {
+        // Get all active plans
+        const [plans] = await db.execute(
+            'SELECT * FROM plans WHERE is_active = 1 ORDER BY price ASC'
+        );
+
+        res.render('pricing/index', {
+            user: req.session.user,
+            plans: plans,
+            paymentMethods: PaymentService.PAYMENT_METHODS
+        });
+    } catch (error) {
+        console.error('Error loading plans:', error);
+        res.status(500).render('error', { 
+            error: 'Failed to load plans',
+            user: req.session.user
+        });
+    }
+});
 
 // Admin routes - pastikan ini ditaruh sebelum route lain yang menggunakan /admin
 app.use('/admin/dashboard', isAdmin, adminDashboardRoutes);
 app.use('/admin/plans', isAdmin, adminPlanRoutes);
 app.use('/admin/transactions', isAdmin, adminTransactionRoutes);
+
+app.use('/profile', profileRoutes);
+app.use('/contact', contactRoutes);
 
 // Handle 404
 app.use((req, res) => {

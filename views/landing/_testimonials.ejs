@@ -1,0 +1,111 @@
+<!-- views/landing/_testimonials.ejs -->
+<section id="testimonials" class="bg-white py-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center">
+            <h2 class="text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl">
+                Trusted by businesses worldwide
+            </h2>
+            <p class="mt-4 text-xl text-gray-500">
+                See what our customers are saying about their experience with KreatorAI
+            </p>
+        </div>
+
+        <!-- Testimonial Grid -->
+        <div class="mt-20 grid grid-cols-1 gap-8 lg:grid-cols-3">
+            <% testimonials.forEach(testimonial => { %>
+                <div class="flex flex-col bg-white rounded-lg shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+                    <div class="flex-1 p-6 flex flex-col justify-between">
+                        <div class="flex-1">
+                            <!-- Stars -->
+                            <div class="flex items-center mb-4">
+                                <% for(let i = 0; i < 5; i++) { %>
+                                    <svg class="h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                    </svg>
+                                <% } %>
+                            </div>
+
+                            <!-- Quote -->
+                            <blockquote class="mt-8 text-gray-500">
+                                <p class="text-lg font-medium">
+                                    "<%= testimonial.content %>"
+                                </p>
+                            </blockquote>
+                        </div>
+
+                        <!-- Author -->
+                        <div class="mt-6 flex items-center">
+                            <div class="flex-shrink-0">
+                                <img class="h-12 w-12 rounded-full" src="<%= testimonial.avatar %>" alt="<%= testimonial.name %>">
+                            </div>
+                            <div class="ml-4">
+                                <div class="text-base font-medium text-gray-900"><%= testimonial.name %></div>
+                                <div class="text-sm text-gray-500"><%= testimonial.role %> at <%= testimonial.company %></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <% }); %>
+        </div>
+
+        <!-- Logos Section -->
+        <div class="mt-20">
+            <h3 class="text-center text-sm font-semibold uppercase tracking-wide text-gray-500">
+                Trusted by innovative companies worldwide
+            </h3>
+            <div class="mt-8 grid grid-cols-2 gap-8 md:grid-cols-6">
+                <div class="col-span-1 flex justify-center opacity-50 grayscale hover:opacity-100 hover:grayscale-0 transition-all duration-300">
+                    <img class="h-12" src="/images/logos/logo-1.svg" alt="Company 1">
+                </div>
+                <div class="col-span-1 flex justify-center opacity-50 grayscale hover:opacity-100 hover:grayscale-0 transition-all duration-300">
+                    <img class="h-12" src="/images/logos/logo-2.svg" alt="Company 2">
+                </div>
+                <div class="col-span-1 flex justify-center opacity-50 grayscale hover:opacity-100 hover:grayscale-0 transition-all duration-300">
+                    <img class="h-12" src="/images/logos/logo-3.svg" alt="Company 3">
+                </div>
+                <div class="col-span-1 flex justify-center opacity-50 grayscale hover:opacity-100 hover:grayscale-0 transition-all duration-300">
+                    <img class="h-12" src="/images/logos/logo-4.svg" alt="Company 4">
+                </div>
+                <div class="col-span-1 flex justify-center opacity-50 grayscale hover:opacity-100 hover:grayscale-0 transition-all duration-300">
+                    <img class="h-12" src="/images/logos/logo-5.svg" alt="Company 5">
+                </div>
+                <div class="col-span-1 flex justify-center opacity-50 grayscale hover:opacity-100 hover:grayscale-0 transition-all duration-300">
+                    <img class="h-12" src="/images/logos/logo-6.svg" alt="Company 6">
+                </div>
+            </div>
+        </div>
+
+        <!-- Trust Indicators -->
+        <div class="mt-20 grid grid-cols-1 gap-8 md:grid-cols-3">
+            <div class="flex flex-col items-center">
+                <div class="flex h-12 w-12 items-center justify-center rounded-md bg-blue-500 text-white">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                    </svg>
+                </div>
+                <h3 class="mt-6 text-center text-lg font-medium text-gray-900">Enterprise-grade Security</h3>
+                <p class="mt-2 text-center text-base text-gray-500">Your data is protected with industry-leading encryption and security measures.</p>
+            </div>
+
+            <div class="flex flex-col items-center">
+                <div class="flex h-12 w-12 items-center justify-center rounded-md bg-blue-500 text-white">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                    </svg>
+                </div>
+                <h3 class="mt-6 text-center text-lg font-medium text-gray-900">24/7 Support</h3>
+                <p class="mt-2 text-center text-base text-gray-500">Our dedicated support team is available around the clock to help you succeed.</p>
+            </div>
+
+            <div class="flex flex-col items-center">
+                <div class="flex h-12 w-12 items-center justify-center rounded-md bg-blue-500 text-white">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+                <h3 class="mt-6 text-center text-lg font-medium text-gray-900">99.9% Uptime</h3>
+                <p class="mt-2 text-center text-base text-gray-500">Rely on our robust infrastructure for uninterrupted service delivery.</p>
+            </div>
+        </div>
+    </div>
+</section>

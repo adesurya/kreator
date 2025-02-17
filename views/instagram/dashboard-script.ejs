@@ -1,0 +1,307 @@
+<!-- views/instagram/dashboard-script.ejs -->
+<script>
+    // Global Variables
+    let selectedAccountId = null;
+    let mediaFiles = [];
+    
+    // Initialize when document is ready
+    document.addEventListener('DOMContentLoaded', function() {
+        initializeEventListeners();
+        setupDateTimeInputs();
+    });
+    
+    // Initialize Event Listeners
+    function initializeEventListeners() {
+        // Form Submissions
+        const addAccountForm = document.getElementById('addAccountForm');
+        if (addAccountForm) {
+            addAccountForm.addEventListener('submit', handleAddAccount);
+        }
+    
+        const schedulePostForm = document.getElementById('schedulePostForm');
+        if (schedulePostForm) {
+            schedulePostForm.addEventListener('submit', handleSchedulePost);
+        }
+    
+        // Media Upload
+        const mediaInput = document.getElementById('mediaFiles');
+        if (mediaInput) {
+            mediaInput.addEventListener('change', handleMediaUpload);
+        }
+    
+        // Setup drag and drop
+        setupDragAndDrop();
+    }
+    
+    // Account Management Functions
+    async function handleAddAccount(event) {
+        event.preventDefault();
+        const form = event.target;
+        const submitButton = form.querySelector('button[type="submit"]');
+        const submitText = submitButton.textContent;
+    
+        try {
+            // Show loading state
+            submitButton.disabled = true;
+            submitButton.innerHTML = `
+                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Adding Account...
+            `;
+    
+            const formData = new FormData(form);
+            const data = {
+                sessionString: formData.get('sessionString'),
+                useProxy: formData.get('useProxy') === 'on',
+                proxyData: formData.get('useProxy') === 'on' ? {
+                    login: formData.get('proxyLogin'),
+                    password: formData.get('proxyPassword'),
+                    host: formData.get('proxyHost'),
+                    port: formData.get('proxyPort')
+                } : null
+            };
+    
+            const response = await fetch('/instagram/account/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+    
+            const result = await response.json();
+    
+            if (result.success) {
+                showNotification('Account added successfully', 'success');
+                closeAddAccountModal();
+                window.location.reload();
+            } else {
+                throw new Error(result.error || 'Failed to add account');
+            }
+        } catch (error) {
+            showNotification(error.message, 'error');
+        } finally {
+            submitButton.disabled = false;
+            submitButton.textContent = submitText;
+        }
+    }
+    
+    // Media Handling Functions
+    function handleMediaUpload(event) {
+        const files = Array.from(event.target.files);
+        if (files.length > 10) {
+            showNotification('Maximum 10 files allowed', 'error');
+            event.target.value = '';
+            return;
+        }
+    
+        const previewContainer = document.getElementById('mediaPreview');
+        previewContainer.innerHTML = '';
+        mediaFiles = [];
+    
+        files.forEach(file => {
+            if (!file.type.match('image.*') && !file.type.match('video.*')) {
+                showNotification('Only images and videos are allowed', 'error');
+                return;
+            }
+    
+            const reader = new FileReader();
+            const preview = document.createElement('div');
+            preview.className = 'relative';
+    
+            reader.onload = function(e) {
+                if (file.type.match('image.*')) {
+                    preview.innerHTML = `
+                        <div class="relative group">
+                            <img src="${e.target.result}" class="w-full h-32 object-cover rounded-lg">
+                            <div class="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
+                                <button type="button" onclick="removeMedia(this)" class="text-white hover:text-red-500">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    preview.innerHTML = `
+                        <div class="relative group">
+                            <video src="${e.target.result}" class="w-full h-32 object-cover rounded-lg"></video>
+                            <div class="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
+                                <button type="button" onclick="removeMedia(this)" class="text-white hover:text-red-500">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }
+            };
+    
+            reader.readAsDataURL(file);
+            previewContainer.appendChild(preview);
+            mediaFiles.push(file);
+        });
+    }
+    
+    // Schedule Post Functions
+    async function handleSchedulePost(event) {
+        event.preventDefault();
+        const form = event.target;
+        const submitButton = form.querySelector('button[type="submit"]');
+        const submitText = submitButton.textContent;
+    
+        try {
+            if (mediaFiles.length === 0) {
+                throw new Error('Please select at least one media file');
+            }
+    
+            submitButton.disabled = true;
+            submitButton.innerHTML = `
+                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Scheduling...
+            `;
+    
+            const formData = new FormData();
+            formData.append('accountId', selectedAccountId);
+            formData.append('caption', form.caption.value);
+            formData.append('scheduleTime', form.scheduleTime.value);
+            
+            mediaFiles.forEach(file => {
+                formData.append('media', file);
+            });
+    
+            const response = await fetch('/instagram/post/schedule', {
+                method: 'POST',
+                body: formData
+            });
+    
+            const result = await response.json();
+    
+            if (result.success) {
+                showNotification('Post scheduled successfully', 'success');
+                closeScheduleModal();
+                window.location.reload();
+            } else {
+                throw new Error(result.error || 'Failed to schedule post');
+            }
+        } catch (error) {
+            showNotification(error.message, 'error');
+        } finally {
+            submitButton.disabled = false;
+            submitButton.textContent = submitText;
+        }
+    }
+    
+    // UI Helper Functions
+    function showScheduleModal(accountId) {
+        selectedAccountId = accountId;
+        document.getElementById('schedulePostModal').classList.remove('hidden');
+        mediaFiles = [];
+        document.getElementById('mediaPreview').innerHTML = '';
+        document.getElementById('schedulePostForm').reset();
+    }
+    
+    function closeScheduleModal() {
+        document.getElementById('schedulePostModal').classList.add('hidden');
+        selectedAccountId = null;
+    }
+    
+    function showAddAccountModal() {
+        document.getElementById('addAccountModal').classList.remove('hidden');
+    }
+    
+    function closeAddAccountModal() {
+        document.getElementById('addAccountModal').classList.add('hidden');
+        document.getElementById('addAccountForm').reset();
+        document.getElementById('proxyFields').classList.add('hidden');
+    }
+    
+    function removeMedia(button) {
+        const index = Array.from(button.closest('#mediaPreview').children).indexOf(button.closest('.relative'));
+        mediaFiles.splice(index, 1);
+        button.closest('.relative').remove();
+    }
+    
+    function showNotification(message, type = 'success') {
+        const notification = document.createElement('div');
+        notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
+            type === 'success' ? 'bg-green-500' : 'bg-red-500'
+        } text-white transform translate-y-0 transition-transform duration-300 ease-out`;
+        
+        notification.innerHTML = `
+            <div class="flex items-center">
+                <span class="mr-2">${type === 'success' ? '✓' : '✕'}</span>
+                <span>${message}</span>
+            </div>
+        `;
+    
+        document.body.appendChild(notification);
+    
+        setTimeout(() => {
+            notification.style.transform = 'translateY(-100%)';
+            setTimeout(() => notification.remove(), 300);
+        }, 3000);
+    }
+    
+    // Utility Functions
+    function setupDateTimeInputs() {
+        const scheduleTimeInput = document.getElementById('scheduleTime');
+        if (scheduleTimeInput) {
+            const now = new Date();
+            now.setMinutes(now.getMinutes() + 5);
+            const minDateTime = now.toISOString().slice(0, 16);
+            scheduleTimeInput.min = minDateTime;
+        }
+    }
+    
+    function setupDragAndDrop() {
+        const dropZone = document.querySelector('.dropzone');
+        if (!dropZone) return;
+    
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+        });
+    
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, highlight, false);
+        });
+    
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, unhighlight, false);
+        });
+    
+        function highlight(e) {
+            dropZone.classList.add('border-blue-500', 'bg-blue-50');
+        }
+    
+        function unhighlight(e) {
+            dropZone.classList.remove('border-blue-500', 'bg-blue-50');
+        }
+    
+        dropZone.addEventListener('drop', handleDrop, false);
+    
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            handleFiles(files);
+        }
+    
+        function handleFiles(files) {
+            const input = document.getElementById('mediaFiles');
+            input.files = files;
+            input.dispatchEvent(new Event('change'));
+        }
+    }
+    </script>

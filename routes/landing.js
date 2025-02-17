@@ -5,10 +5,13 @@ const router = express.Router();
 router.get('/', (req, res) => {
     // If user is already logged in, redirect to dashboard
     if (req.session && req.session.userId) {
+        if (req.session.user.role === 'admin') {
+            return res.redirect('/admin/dashboard');
+        }
         return res.redirect('/dashboard');
     }
     
-    res.render('landing/index', {
+    return res.render('landing/index', {
         layout: 'layouts/landing',
         features: [
             {

@@ -1,0 +1,141 @@
+<!-- Add Account Modal -->
+<div id="addAccountModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 overflow-y-auto">
+    <div class="min-h-screen px-4 text-center">
+        <!-- Modal overlay -->
+        <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+            <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+        </div>
+
+        <!-- Modal positioning -->
+        <span class="inline-block h-screen align-middle" aria-hidden="true">&#8203;</span>
+
+        <!-- Modal content -->
+        <div class="inline-block w-full max-w-2xl p-6 my-8 text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl">
+            <!-- Modal header -->
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-2xl font-bold text-gray-900">Add Instagram Account</h3>
+                <button onclick="closeAddAccountModal()" class="text-gray-400 hover:text-gray-500 focus:outline-none">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Session ID Instructions -->
+            <div class="bg-blue-50 rounded-xl p-6 mb-6">
+                <h4 class="text-lg font-semibold text-blue-900 mb-4">How to Get Your Instagram Session ID</h4>
+                <div class="space-y-4">
+                    <div class="flex items-start space-x-3">
+                        <div class="flex-shrink-0 h-6 w-6 rounded-full bg-blue-200 flex items-center justify-center text-blue-600 font-bold text-sm">1</div>
+                        <p class="text-blue-800">Open Chrome in Incognito Mode (Ctrl+Shift+N)</p>
+                    </div>
+                    <div class="flex items-start space-x-3">
+                        <div class="flex-shrink-0 h-6 w-6 rounded-full bg-blue-200 flex items-center justify-center text-blue-600 font-bold text-sm">2</div>
+                        <p class="text-blue-800">Go to instagram.com and login to your account</p>
+                    </div>
+                    <div class="flex items-start space-x-3">
+                        <div class="flex-shrink-0 h-6 w-6 rounded-full bg-blue-200 flex items-center justify-center text-blue-600 font-bold text-sm">3</div>
+                        <p class="text-blue-800">Press F12 or right-click and select "Inspect"</p>
+                    </div>
+                    <div class="flex items-start space-x-3">
+                        <div class="flex-shrink-0 h-6 w-6 rounded-full bg-blue-200 flex items-center justify-center text-blue-600 font-bold text-sm">4</div>
+                        <div>
+                            <p class="text-blue-800">Find your session ID:</p>
+                            <ul class="mt-2 text-blue-600 text-sm space-y-1">
+                                <li>• Click "Application" tab</li>
+                                <li>• Expand "Cookies" in the left sidebar</li>
+                                <li>• Click "https://www.instagram.com"</li>
+                                <li>• Find "sessionid" in the list</li>
+                                <li>• Double-click and copy the Value</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Account Form -->
+            <form id="addAccountForm" class="space-y-6">
+                <!-- Session ID Input -->
+                <div>
+                    <label for="sessionString" class="block text-sm font-medium text-gray-700">
+                        Instagram Session ID
+                    </label>
+                    <input type="text" 
+                           id="sessionString"
+                           name="sessionString"
+                           required
+                           class="mt-1 block w-full border border-gray-300 rounded-lg shadow-sm py-2 px-3 focus:ring-blue-500 focus:border-blue-500"
+                           placeholder="Paste your session ID here">
+                </div>
+
+                <!-- Proxy Toggle -->
+                <div class="border-t border-gray-200 pt-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h4 class="text-lg font-medium text-gray-900">Proxy Settings (Optional)</h4>
+                        <div class="flex items-center">
+                            <input type="checkbox" 
+                                   id="useProxy"
+                                   name="useProxy"
+                                   class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                            <label for="useProxy" class="ml-2 text-sm text-gray-600">
+                                Use Proxy
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Proxy Fields -->
+                    <div id="proxyFields" class="hidden space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label for="proxyLogin" class="block text-sm font-medium text-gray-700">
+                                    Proxy Login
+                                </label>
+                                <input type="text" 
+                                       id="proxyLogin"
+                                       name="proxyLogin"
+                                       class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label for="proxyPassword" class="block text-sm font-medium text-gray-700">
+                                    Proxy Password
+                                </label>
+                                <input type="password" 
+                                       id="proxyPassword"
+                                       name="proxyPassword"
+                                       class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label for="proxyHost" class="block text-sm font-medium text-gray-700">
+                                    Proxy Host
+                                </label>
+                                <input type="text" 
+                                       id="proxyHost"
+                                       name="proxyHost"
+                                       class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label for="proxyPort" class="block text-sm font-medium text-gray-700">
+                                    Proxy Port
+                                </label>
+                                <input type="text" 
+                                       id="proxyPort"
+                                       name="proxyPort"
+                                       class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="pt-4">
+                    <button type="submit" 
+                            class="w-full flex justify-center py-2 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        Add Account
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

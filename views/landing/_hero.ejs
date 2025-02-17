@@ -1,0 +1,97 @@
+<!-- views/landing/_hero.ejs -->
+<section class="relative overflow-hidden bg-white">
+    <!-- Background gradient -->
+    <div class="hidden lg:block lg:absolute lg:inset-0">
+        <svg class="absolute left-1/2 top-0 -translate-x-1/2 transform" width="2560" height="800" viewBox="0 0 2560 800" fill="none">
+            <defs>
+                <linearGradient id="heroGradient" x1="50%" y1="0%" x2="50%" y2="100%">
+                    <stop offset="0%" style="stop-color:#4F46E5;stop-opacity:0.2" />
+                    <stop offset="100%" style="stop-color:#4F46E5;stop-opacity:0" />
+                </linearGradient>
+            </defs>
+            <path fill="url(#heroGradient)" d="M0 0h2560v800H0z" />
+        </svg>
+    </div>
+
+    <div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="pt-20 pb-16 sm:pt-32 sm:pb-24 lg:pb-32">
+            <div class="lg:grid lg:grid-cols-12 lg:gap-8">
+                <!-- Left column -->
+                <div class="sm:text-center md:mx-auto md:max-w-2xl lg:col-span-6 lg:text-left">
+                    <!-- Badge -->
+                    <div class="inline-flex items-center rounded-full bg-blue-50 p-1 pr-2 text-blue-600 hover:text-blue-700 sm:text-base lg:text-sm xl:text-base">
+                        <span class="rounded-full bg-blue-600 px-3 py-0.5 text-xs font-semibold leading-5 text-white">New</span>
+                        <span class="ml-2 text-sm">Release Versi v1.0</span>
+                        <svg class="ml-2 h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+
+                    <!-- Main heading -->
+                    <h1>
+                        <span class="mt-1 block text-4xl font-bold tracking-tight sm:text-5xl xl:text-6xl">
+                            <span class="block text-gray-900">Tingkatkan Produktifitas & Kreatifitas</span>
+                            <span class="block text-blue-600">Konten Kreator Indonesia</span>
+                        </span>
+                    </h1>
+
+                    <!-- Description -->
+                    <p class="mt-3 text-base text-gray-500 sm:mt-5 sm:text-xl lg:text-lg xl:text-xl">
+                        KreatorAI membantu konten kreator untuk membuat konten, mencari ide, perencanaan konten, asset digital kreator, dan solusi lainnya untuk kreator. KreatorAI berkomitmen untuk mendukung Industri Ekonomi Kreatif Indonesia.
+                    </p>
+
+                    <!-- CTA Buttons -->
+                    <div class="mt-8 sm:mt-12">
+                        <div class="sm:flex sm:justify-center lg:justify-start">
+                            <div class="rounded-md shadow">
+                                <a href="/register" class="flex w-full items-center justify-center rounded-md border border-transparent bg-blue-600 px-8 py-3 text-base font-medium text-white hover:bg-blue-700 md:px-10 md:py-4 md:text-lg">
+                                    Coba Sekarang!
+                                </a>
+                            </div>
+                            <!-- <div class="mt-3 sm:mt-0 sm:ml-3">
+                                <a href="#features" class="flex w-full items-center justify-center rounded-md border border-transparent bg-gray-100 px-8 py-3 text-base font-medium text-gray-900 hover:bg-gray-200 md:px-10 md:py-4 md:text-lg">
+                                    Learn more
+                                </a>
+                            </div> -->
+                        </div>
+                    </div>
+
+                    <!-- Trust badges -->
+                    <div class="mt-6 sm:mt-12 lg:mt-8">
+                        <p class="text-xs uppercase text-gray-500 tracking-wide font-semibold mb-4">Dipercaya berbagai agensi dan kreator Indonesia</p>
+                        <div class="flex justify-center lg:justify-start space-x-8">
+                            <div class="flex items-center opacity-50 grayscale hover:opacity-100 hover:grayscale-0 transition-all">
+                                <img src="/images/logos/hda.png" alt="Company 1" class="h-8">
+                            </div>
+                            <div class="flex items-center opacity-50 grayscale hover:opacity-100 hover:grayscale-0 transition-all">
+                                <img src="/images/logos/hops.png" alt="Company 2" class="h-8">
+                            </div>
+                            <div class="flex items-center opacity-50 grayscale hover:opacity-100 hover:grayscale-0 transition-all">
+                                <img src="/images/logos/ja.png" alt="Company 3" class="h-8">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right column -->
+                <div class="relative mt-12 sm:mx-auto sm:max-w-lg lg:col-span-6 lg:mx-0 lg:mt-0 lg:flex lg:max-w-none lg:items-center">
+                    <div class="relative mx-auto w-full lg:max-w-md">
+                        <div class="relative block w-full overflow-hidden rounded-2xl">
+                            <!-- Dashboard preview image with hover animation -->
+                            <img src="/images/hero/5879296.jpg" 
+                                 alt="KreatorAI Dashboard" 
+                                 class="w-full transform transition-transform duration-500 hover:scale-105"
+                                 width="640"
+                                 height="360"
+                                 loading="eager">
+                            
+                            <!-- Floating elements -->
+                            <div class="absolute -right-20 -top-20 w-40 h-40 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-50 animate-float"></div>
+                            <div class="absolute -left-20 -bottom-20 w-40 h-40 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-50 animate-float" style="animation-delay: 2s"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

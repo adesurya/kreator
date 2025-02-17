@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KreatorAI - AI Tools Untuk Kreator Indonesia</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100">
+    <nav id="header" class="bg-white shadow-lg fixed w-full z-50 top-0">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between h-16">
+                <!-- Logo -->
+                <div class="flex items-center">
+                    <a href="/" class="text-xl font-bold text-gray-700">KreatorAI</a>
+                </div>
+    
+                <!-- Desktop Menu -->
+                <div class="hidden md:flex space-x-4 items-center">
+                    <% if (locals.user) { %>
+                        <!-- Content Creator Menu -->
+                        <div class="relative group">
+                            <button class="flex items-center text-gray-700 hover:text-blue-500 px-3 py-2">
+                                <span>Content Creator</span>
+                                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+                            <div class="absolute left-0 hidden group-hover:block w-48 bg-white shadow-lg rounded-md py-1">
+                                <a href="/idekreator" class="block px-4 py-2 text-gray-700 hover:bg-blue-50">Ide Creator</a>
+                                <a href="/planner" class="block px-4 py-2 text-gray-700 hover:bg-blue-50">Content Planner</a>
+                                <a href="/gbp" class="block px-4 py-2 text-gray-700 hover:bg-blue-50">GBP Creator</a>
+                            </div>
+                        </div>
+    
+                        <!-- Media Tools Menu -->
+                        <div class="relative group">
+                            <button class="flex items-center text-gray-700 hover:text-blue-500 px-3 py-2">
+                                <span>Media Tools</span>
+                                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+                            <div class="absolute left-0 hidden group-hover:block w-48 bg-white shadow-lg rounded-md py-1">
+                                <a href="/image-generator" class="block px-4 py-2 text-gray-700 hover:bg-blue-50">Image Generator</a>
+                                <a href="/image-caption" class="block px-4 py-2 text-gray-700 hover:bg-blue-50">Image Caption</a>
+                                <a href="/transcribe" class="block px-4 py-2 text-gray-700 hover:bg-blue-50">Audio Transcribe</a>
+                            </div>
+                        </div>
+    
+                        <!-- Document Tools Menu -->
+                        <div class="relative group">
+                            <button class="flex items-center text-gray-700 hover:text-blue-500 px-3 py-2">
+                                <span>Document</span>
+                                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+                            <div class="absolute left-0 hidden group-hover:block w-48 bg-white shadow-lg rounded-md py-1">
+                                <a href="/document-resume" class="block px-4 py-2 text-gray-700 hover:bg-blue-50">Document Resume</a>
+                            </div>
+                        </div>
+    
+                        <!-- Chat Menu -->
+                        <a href="/chat" class="text-gray-700 hover:text-blue-500 px-3 py-2">Chat</a>
+                        <a href="/instagram/dashboard" class="nav-link">
+                            <i class="fas fa-camera"></i>
+                            <span>Instagram Manager</span>
+                        </a>
+                        
+                        
+
+                        <!-- Admin Menu -->
+                        <% if (locals.user.role === 'admin') { %>
+                            <div class="relative group">
+                                <button class="flex items-center text-gray-700 hover:text-blue-500 px-3 py-2">
+                                    <span>Admin Menu</span>
+                                    <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
+                                <div class="absolute left-0 hidden group-hover:block w-48 bg-white shadow-lg rounded-md py-1">
+                                    <a href="/admin/dashboard" class="block px-6 py-2 text-gray-600 hover:bg-gray-100">Dashboard</a>
+                                    <a href="/admin/plans" class="block px-6 py-2 text-gray-600 hover:bg-gray-100">Manage Plans</a>
+                                    <a href="/admin/transactions" class="block px-6 py-2 text-gray-600 hover:bg-gray-100">Transactions</a>
+                                    <a href="/admin/users" class="block px-6 py-2 text-gray-600 hover:bg-gray-100">Users</a>
+                                </div>
+                            </div>
+                        <% } %>
+    
+                        <!-- User Profile Menu -->
+                        <div class="relative group">
+                            <button class="flex items-center text-gray-700 hover:text-blue-500 px-3 py-2">
+                                <span><%= locals.user.username %></span>
+                                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+                            <div class="absolute right-0 hidden group-hover:block w-48 bg-white shadow-lg rounded-md py-1">
+                                <a href="/profile" class="block px-4 py-2 text-gray-700 hover:bg-blue-50">Profile</a>
+                                <a href="/auth/logout" class="block px-4 py-2 text-red-500 hover:bg-red-50">Logout</a>
+                            </div>
+                        </div>
+                    <% } else { %>
+                        <a href="/auth/login" class="text-gray-700 hover:text-blue-500 px-3 py-2">Login</a>
+                        <a href="/auth/register" class="text-gray-700 hover:text-blue-500 px-3 py-2">Register</a>
+                    <% } %>
+                </div>
+    
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden flex items-center">
+                    <button id="mobile-menu-button" class="text-gray-700 hover:text-blue-500 focus:outline-none">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    
+        <!-- Mobile Menu Panel -->
+        <div id="mobile-menu-panel" class="hidden md:hidden bg-white border-t border-gray-200">
+            <% if (locals.user) { %>
+                <!-- Content Creator Section -->
+                <div class="mobile-menu-section">
+                    <button class="mobile-menu-trigger w-full flex justify-between items-center px-4 py-2 text-gray-700">
+                        <span>Content Creator</span>
+                        <svg class="w-4 h-4 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                    <div class="mobile-submenu hidden bg-gray-50 py-2">
+                        <a href="/idekreator" class="block px-6 py-2 text-gray-600 hover:bg-gray-100">Ide Creator</a>
+                        <a href="/planner" class="block px-6 py-2 text-gray-600 hover:bg-gray-100">Content Planner</a>
+                        <a href="/gbp" class="block px-6 py-2 text-gray-600 hover:bg-gray-100">GBP Creator</a>
+                    </div>
+                </div>
+    
+                <!-- Media Tools Section -->
+                <div class="mobile-menu-section">
+                    <button class="mobile-menu-trigger w-full flex justify-between items-center px-4 py-2 text-gray-700">
+                        <span>Media Tools</span>
+                        <svg class="w-4 h-4 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                    <div class="mobile-submenu hidden bg-gray-50 py-2">
+                        <a href="/image-generator" class="block px-6 py-2 text-gray-600 hover:bg-gray-100">Image Generator</a>
+                        <a href="/image-caption" class="block px-6 py-2 text-gray-600 hover:bg-gray-100">Image Caption</a>
+                        <a href="/transcribe" class="block px-6 py-2 text-gray-600 hover:bg-gray-100">Audio Transcribe</a>
+                    </div>
+                </div>
+    
+                <!-- Document Section -->
+                <div class="mobile-menu-section">
+                    <button class="mobile-menu-trigger w-full flex justify-between items-center px-4 py-2 text-gray-700">
+                        <span>Document</span>
+                        <svg class="w-4 h-4 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                    <div class="mobile-submenu hidden bg-gray-50 py-2">
+                        <a href="/document-resume" class="block px-6 py-2 text-gray-600 hover:bg-gray-100">Document Resume</a>
+                    </div>
+                </div>
+    
+                <!-- Chat Menu -->
+                <a href="/chat" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Chat</a>
+    
+                <!-- Admin Menu -->
+                <% if (locals.user && locals.user.role === 'admin') { %>
+                    <div class="relative group">
+                        <button class="mobile-menu-trigger w-full flex justify-between items-center px-4 py-2 text-gray-700">
+                            <span>Admin Menu</span>
+                            <svg class="w-4 h-4 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+                        <div class="mobile-submenu hidden bg-gray-50 py-2">
+                            <a href="/admin/dashboard" class="block px-6 py-2 text-gray-600 hover:bg-gray-100">Dashboard</a>
+                            <a href="/admin/plans" class="block px-6 py-2 text-gray-600 hover:bg-gray-100">Manage Plans</a>
+                            <a href="/admin/transactions" class="block px-6 py-2 text-gray-600 hover:bg-gray-100">Transactions</a>
+                            <a href="/admin/users" class="block px-6 py-2 text-gray-600 hover:bg-gray-100">Users</a>
+                        </div>
+                    </div>
+                <% } %>
+    
+                <!-- Profile Section -->
+                <div class="mobile-menu-section">
+                    <button class="mobile-menu-trigger w-full flex justify-between items-center px-4 py-2 text-gray-700">
+                        <span>Profile</span>
+                        <svg class="w-4 h-4 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                    <div class="mobile-submenu hidden bg-gray-50 py-2">
+                        <a href="/profile" class="block px-6 py-2 text-gray-600 hover:bg-gray-100">Profile</a>
+                        <a href="/auth/logout" class="block px-6 py-2 text-red-500 hover:bg-red-100">Logout</a>
+                    </div>
+                </div>
+            <% } else { %>
+                <a href="/auth/login" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Login</a>
+                <a href="/auth/register" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Register</a>
+            <% } %>
+        </div>
+    </nav>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mobile menu toggle
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenuPanel = document.getElementById('mobile-menu-panel');
+            
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenuPanel.classList.toggle('hidden');
+            });
+        
+            // Mobile submenu toggles
+            document.querySelectorAll('.mobile-menu-trigger').forEach(trigger => {
+                trigger.addEventListener('click', (e) => {
+                    const submenu = e.currentTarget.nextElementSibling;
+                    const arrow = e.currentTarget.querySelector('svg');
+                    
+                    // Close other submenus
+                    document.querySelectorAll('.mobile-submenu').forEach(menu => {
+                        if (menu !== submenu) {
+                            menu.classList.add('hidden');
+                            const otherArrow = menu.previousElementSibling.querySelector('svg');
+                            otherArrow.classList.remove('rotate-180');
+                        }
+                    });
+        
+                    // Toggle current submenu
+                    submenu.classList.toggle('hidden');
+                    arrow.classList.toggle('rotate-180');
+                });
+            });
+        
+            // Close mobile menu when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!mobileMenuPanel.contains(e.target) && !mobileMenuButton.contains(e.target)) {
+                    mobileMenuPanel.classList.add('hidden');
+                }
+            });
+        
+            // Handle window resize
+            window.addEventListener('resize', () => {
+                if (window.innerWidth >= 768) { // md breakpoint
+                    mobileMenuPanel.classList.add('hidden');
+                    // Reset all submenus
+                    document.querySelectorAll('.mobile-submenu').forEach(submenu => {
+                        submenu.classList.add('hidden');
+                        const arrow = submenu.previousElementSibling.querySelector('svg');
+                        arrow.classList.remove('rotate-180');
+                    });
+                }
+            });
+        
+            // Add hover effect for desktop dropdowns
+            const dropdowns = document.querySelectorAll('.group');
+            dropdowns.forEach(dropdown => {
+                const button = dropdown.querySelector('button');
+                const menu = dropdown.querySelector('.group-hover\\:block');
+                
+                let timeoutId;
+        
+                dropdown.addEventListener('mouseenter', () => {
+                    clearTimeout(timeoutId);
+                    dropdowns.forEach(other => {
+                        if (other !== dropdown) {
+                            const otherMenu = other.querySelector('.group-hover\\:block');
+                            otherMenu?.classList.add('hidden');
+                        }
+                    });
+                    menu?.classList.remove('hidden');
+                });
+        
+                dropdown.addEventListener('mouseleave', () => {
+                    timeoutId = setTimeout(() => {
+                        menu?.classList.add('hidden');
+                    }, 200);
+                });
+            });
+        
+            // Add keyboard navigation for accessibility
+            document.querySelectorAll('.group button').forEach(button => {
+                button.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        const menu = button.nextElementSibling;
+                        const isHidden = menu.classList.contains('hidden');
+                        
+                        // Hide all other menus
+                        document.querySelectorAll('.group-hover\\:block').forEach(m => {
+                            if (m !== menu) m.classList.add('hidden');
+                        });
+        
+                        // Toggle current menu
+                        menu.classList.toggle('hidden', !isHidden);
+                        
+                        if (!isHidden) {
+                            button.focus();
+                        } else {
+                            const firstLink = menu.querySelector('a');
+                            if (firstLink) firstLink.focus();
+                        }
+                    }
+                });
+            });
+        
+            // Close dropdowns when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.group')) {
+                    document.querySelectorAll('.group-hover\\:block').forEach(menu => {
+                        menu.classList.add('hidden');
+                    });
+                }
+            });
+        
+            // Add active state for current page
+            const currentPath = window.location.pathname;
+            document.querySelectorAll('a').forEach(link => {
+                if (link.getAttribute('href') === currentPath) {
+                    link.classList.add('text-blue-500');
+                    link.classList.add('font-semibold');
+                }
+            });
+        });
+        </script>
+        
+        <style>
+
+        body {
+            padding-top: 4rem;
+        }
+        .dropdown:hover .dropdown-menu {
+            display: block;
+        }
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background-color: white;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+            border-radius: 0.5rem;
+        }
+        .dropdown-menu a:hover {
+            background-color: #f3f4f6;
+            color: #2563eb;
+        }
+
+        /* Smooth transitions */
+        .mobile-submenu {
+            transition: all 0.3s ease-in-out;
+        }
+        
+        .mobile-menu-trigger svg {
+            transition: transform 0.3s ease;
+        }
+        
+        /* Active state styling */
+        .text-blue-500.font-semibold:hover {
+            color: #2563eb !important;
+        }
+        
+        /* Dropdown animation */
+        .group-hover\:block {
+            transition: opacity 0.2s ease-in-out;
+            opacity: 0;
+        }
+        
+        .group:hover .group-hover\:block {
+            opacity: 1;
+        }
+        
+        /* Mobile menu animation */
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .mobile-menu-panel:not(.hidden) {
+            animation: slideDown 0.3s ease-out;
+        }
+        </style>
+</body>
+</html>

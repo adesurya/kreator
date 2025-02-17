@@ -1,0 +1,44 @@
+// views/instagram/components/addAccount.ejs
+<div class="bg-white p-6 rounded-lg">
+    <h3 class="text-lg font-medium mb-4">Add Instagram Account</h3>
+    
+    <div class="space-y-4">
+        <div class="bg-blue-50 p-4 rounded">
+            <h4 class="font-medium">Cara mendapatkan session string:</h4>
+            <ol class="list-decimal ml-4 mt-2 space-y-2">
+                <li>Install extension "Cookie Editor" di browser</li>
+                <li>Buka Instagram.com dan login ke akun Anda</li>
+                <li>Klik ikon extension Cookie Editor</li>
+                <li>Cari cookie dengan nama "sessionid"</li>
+                <li>Copy nilai cookie tersebut</li>
+                <li>Paste di form di bawah ini</li>
+            </ol>
+        </div>
+
+        <form id="addAccountForm">
+            <div class="space-y-2">
+                <label class="block text-sm font-medium">Session String</label>
+                <input type="text" 
+                       name="sessionString"
+                       class="w-full border rounded p-2"
+                       required>
+            </div>
+
+            <div class="mt-4 space-y-2">
+                <label class="block text-sm font-medium">Proxy (Opsional)</label>
+                <input type="text" 
+                       name="proxy"
+                       placeholder="socks5://username:password@host:port"
+                       class="w-full border rounded p-2">
+                <p class="text-sm text-gray-500">
+                    Gunakan proxy untuk menghindari batasan Instagram
+                </p>
+            </div>
+
+            <button type="submit" 
+                    class="mt-4 w-full bg-blue-600 text-white p-2 rounded">
+                Add Account
+            </button>
+        </form>
+    </div>
+</div>

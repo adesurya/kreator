@@ -17,7 +17,10 @@ const documentationRoutes = require('./routes/documentation');
 const dashboardController = require('./controllers/dashboardController');
 const db = require('./config/database');
 const PaymentService = require('./services/PaymentService');
-
+const pricingRoutes = require('./routes/pricing');
+const paymentRoutes = require('./routes/payment');
+const instagramRoutes = require('./routes/instagram');
+const { checkInstagramSession } = require('./middleware/instagramSession');
 
 const { checkSubscription } = require('./middleware/subscriptionCheck');
 const { isAuthenticated } = require('./middleware/auth');
@@ -32,8 +35,8 @@ if (!fs.existsSync(uploadsDir)){
 }
 
 // Middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(session({
     secret: process.env.JWT_SECRET || 'your-secret-key',
@@ -46,10 +49,10 @@ app.use(session({
 }));
 
 // View engine setup
-app.use(ejsLayouts);
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.set('layout', 'layouts/main');
+app.use(ejsLayouts);
 
 app.use((req, res, next) => {
     // Set default template variables
@@ -69,17 +72,18 @@ app.use((req, res, next) => {
     res.setHeader(
         'Content-Security-Policy',
         "default-src 'self' *; " +
-        "script-src 'self' 'unsafe-inline' 'unsafe-eval' *; " +
-        "style-src 'self' 'unsafe-inline' *; " +
-        "img-src 'self' data: blob: *; " +
-        "font-src 'self' data: *; " +
-        "connect-src 'self' *;"
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://cdn.jsdelivr.net; " +
+        "style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com/ https://cdn.jsdelivr.net; " +
+        "img-src 'self' data: blob: https://*.cdninstagram.com https://*.fbcdn.net https://ui-avatars.com; " +
+        "connect-src 'self' https://*.instagram.com https://graph.instagram.com; " +
+        "font-src 'self' data: https://cdn.jsdelivr.net;"
     );
 
     next();
 });
 
 // Import routes
+const landingRoutes = require('./routes/landing');
 const authRoutes = require('./routes/auth');
 const chatRoutes = require('./routes/chat');
 const adminRoutes = require('./routes/admin');
@@ -88,22 +92,40 @@ const imageGeneratorRoutes = require('./routes/imageGenerator');
 const documentResumeRoute = require('./routes/documentResume');
 const gbpRoutes = require('./routes/gbp');
 const imageCaptionRoutes = require('./routes/imageCaption');
-const landingRoutes = require('./routes/landing');
 
 const tempDir = path.join(__dirname, 'temp');
 if (!fs.existsSync(tempDir)){
     fs.mkdirSync(tempDir);
 }
 
+const requiredEnvVars = [
+    'APP_URL',
+    'PORT',
+    'SMTP_HOST',
+    'SMTP_PORT',
+    'SMTP_USER',
+    'SMTP_PASS',
+    'MAIL_FROM_NAME',
+    'MAIL_FROM_ADDRESS'
+];
+
+const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
+if (missingEnvVars.length > 0) {
+    console.error('Missing required environment variables:', missingEnvVars.join(', '));
+    process.exit(1);
+}
+
 // Root route
 app.get('/', (req, res) => {
-    if (req.session && req.session.userId) {
+    // If user is logged in, redirect appropriately
+    if (req.session.user) {
         if (req.session.user.role === 'admin') {
             return res.redirect('/admin/dashboard');
         }
-        // Check subscription before redirecting to dashboard
-        return res.redirect('/pricing');
+        return res.redirect('/dashboard');
     }
+    
+    // Otherwise, render landing page
     res.render('landing/index', {
         layout: 'layouts/landing',
         user: null,
@@ -123,28 +145,11 @@ app.use('/image-generator', isAuthenticated, checkSubscription, imageGeneratorRo
 app.use('/document-resume', isAuthenticated, checkSubscription, documentResumeRoute);
 app.use('/gbp', isAuthenticated, checkSubscription, gbpRoutes);
 app.use('/image-caption', isAuthenticated, checkSubscription, imageCaptionRoutes);
+app.use('/instagram', isAuthenticated, instagramRoutes);
 
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
-app.use('/pricing', isAuthenticated, async (req, res) => {
-    try {
-        // Get all active plans
-        const [plans] = await db.execute(
-            'SELECT * FROM plans WHERE is_active = 1 ORDER BY price ASC'
-        );
-
-        res.render('pricing/index', {
-            user: req.session.user,
-            plans: plans,
-            paymentMethods: PaymentService.PAYMENT_METHODS
-        });
-    } catch (error) {
-        console.error('Error loading plans:', error);
-        res.status(500).render('error', { 
-            error: 'Failed to load plans',
-            user: req.session.user
-        });
-    }
-});
+app.use('/pricing', pricingRoutes);
+app.use('/payment', paymentRoutes); 
 
 // Admin routes - pastikan ini ditaruh sebelum route lain yang menggunakan /admin
 app.use('/admin/dashboard', isAdmin, adminDashboardRoutes);
@@ -175,6 +180,22 @@ app.use((err, req, res, next) => {
         method: req.method,
         body: req.body
     });
+
+    if (err.name === 'IgCheckpointError') {
+        return res.status(403).json({
+            error: 'Instagram verification required',
+            requiresVerification: true,
+            verificationUrl: err.url
+        });
+    }
+
+    if (err.name === 'IgLoginTwoFactorRequiredError') {
+        return res.status(403).json({
+            error: 'Two-factor authentication required',
+            requiresTwoFactor: true,
+            twoFactorInfo: err.response.body.two_factor_info
+        });
+    }
 
     // For XHR/API requests
     if (req.xhr || req.headers.accept?.includes('json')) {
@@ -217,4 +238,13 @@ app.listen(PORT, () => {
             console.log(`${Object.keys(r.route.methods).join(',')} ${r.route.path}`);
         }
     });
+});
+
+console.log('Application starting with config:', {
+    NODE_ENV: process.env.NODE_ENV,
+    PORT: process.env.PORT,
+    DUITKU_BASE_URL: process.env.DUITKU_BASE_URL,
+    DUITKU_CALLBACK_URL: process.env.DUITKU_CALLBACK_URL,
+    DUITKU_RETURN_URL: process.env.DUITKU_RETURN_URL,
+    APP_URL: process.env.APP_URL
 });

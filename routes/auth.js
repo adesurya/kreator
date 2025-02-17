@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../config/database');
 const bcrypt = require('bcryptjs');
+const PasswordResetController = require('../controllers/PasswordResetController');
 
 // Controllers
 const authController = {
@@ -144,5 +145,12 @@ router.post('/login', authController.postLogin);
 router.get('/register', authController.getRegister);
 router.post('/register', authController.postRegister);
 router.get('/logout', authController.logout);
+
+// Password Reset Routes
+router.get('/forgot-password', PasswordResetController.showForgotForm);
+router.post('/forgot-password', PasswordResetController.handleForgotPassword);
+router.get('/reset-password/:token', PasswordResetController.showResetForm);
+router.post('/reset-password/:token', PasswordResetController.handleReset);
+
 
 module.exports = router;

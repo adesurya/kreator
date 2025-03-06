@@ -21,6 +21,7 @@ const pricingRoutes = require('./routes/pricing');
 const paymentRoutes = require('./routes/payment');
 const instagramRoutes = require('./routes/instagram');
 const { checkInstagramSession } = require('./middleware/instagramSession');
+const backgroundRemoveRoutes = require('./routes/backgroundRemove.js');
 
 const { checkSubscription } = require('./middleware/subscriptionCheck');
 const { isAuthenticated } = require('./middleware/auth');
@@ -74,7 +75,7 @@ app.use((req, res, next) => {
         "default-src 'self' *; " +
         "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://cdn.jsdelivr.net; " +
         "style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com/ https://cdn.jsdelivr.net; " +
-        "img-src 'self' data: blob: https://*.cdninstagram.com https://*.fbcdn.net https://ui-avatars.com; " +
+        "img-src 'self' data: blob: https://*.cdninstagram.com https://*.fbcdn.net https://ui-avatars.com https://oaidalleapiprodscus.blob.core.windows.net; " +
         "connect-src 'self' https://*.instagram.com https://graph.instagram.com; " +
         "font-src 'self' data: https://cdn.jsdelivr.net;"
     );
@@ -146,6 +147,7 @@ app.use('/document-resume', isAuthenticated, checkSubscription, documentResumeRo
 app.use('/gbp', isAuthenticated, checkSubscription, gbpRoutes);
 app.use('/image-caption', isAuthenticated, checkSubscription, imageCaptionRoutes);
 app.use('/instagram', isAuthenticated, instagramRoutes);
+app.use('/background-remove', isAuthenticated, checkSubscription, backgroundRemoveRoutes);
 
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 app.use('/pricing', pricingRoutes);

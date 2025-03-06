@@ -3,11 +3,38 @@
     // Global Variables
     let selectedAccountId = null;
     let mediaFiles = [];
-    
+    let isProcessing = false;
+
     // Initialize when document is ready
     document.addEventListener('DOMContentLoaded', function() {
-        initializeEventListeners();
-        setupDateTimeInputs();
+        // Media upload handler
+        const mediaInput = document.getElementById('mediaFiles');
+        if (mediaInput) {
+            mediaInput.addEventListener('change', handleMediaUpload);
+        }
+
+        // Schedule post form
+        const scheduleForm = document.getElementById('schedulePostForm');
+        if (scheduleForm) {
+            scheduleForm.addEventListener('submit', handleSchedulePost);
+        }
+
+        // Close modal when clicking outside
+        const modal = document.getElementById('schedulePostModal');
+        if (modal) {
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    closeScheduleModal();
+                }
+            });
+        }
+
+        // Close modal on escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeScheduleModal();
+            }
+        });
     });
     
     // Initialize Event Listeners
@@ -96,28 +123,29 @@
             event.target.value = '';
             return;
         }
-    
+
+        // Clear previous files
+        mediaFiles = [];
         const previewContainer = document.getElementById('mediaPreview');
         previewContainer.innerHTML = '';
-        mediaFiles = [];
-    
+
         files.forEach(file => {
             if (!file.type.match('image.*') && !file.type.match('video.*')) {
-                showNotification('Only images and videos are allowed', 'error');
+                showNotification(`${file.name} is not a valid image or video file`, 'error');
                 return;
             }
-    
+
             const reader = new FileReader();
             const preview = document.createElement('div');
-            preview.className = 'relative';
-    
+            preview.className = 'relative group';
+
             reader.onload = function(e) {
                 if (file.type.match('image.*')) {
                     preview.innerHTML = `
-                        <div class="relative group">
+                        <div class="relative">
                             <img src="${e.target.result}" class="w-full h-32 object-cover rounded-lg">
                             <div class="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
-                                <button type="button" onclick="removeMedia(this)" class="text-white hover:text-red-500">
+                                <button onclick="removeMedia(this)" class="text-white hover:text-red-500">
                                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                     </svg>
@@ -127,10 +155,10 @@
                     `;
                 } else {
                     preview.innerHTML = `
-                        <div class="relative group">
+                        <div class="relative">
                             <video src="${e.target.result}" class="w-full h-32 object-cover rounded-lg"></video>
                             <div class="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
-                                <button type="button" onclick="removeMedia(this)" class="text-white hover:text-red-500">
+                                <button onclick="removeMedia(this)" class="text-white hover:text-red-500">
                                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                     </svg>
@@ -140,7 +168,7 @@
                     `;
                 }
             };
-    
+
             reader.readAsDataURL(file);
             previewContainer.appendChild(preview);
             mediaFiles.push(file);
@@ -150,15 +178,35 @@
     // Schedule Post Functions
     async function handleSchedulePost(event) {
         event.preventDefault();
+        
+        if (isProcessing) return;
+        isProcessing = true;
+
         const form = event.target;
         const submitButton = form.querySelector('button[type="submit"]');
-        const submitText = submitButton.textContent;
-    
+        const originalButtonText = submitButton.textContent;
+
         try {
+            // Validate inputs
+            if (!selectedAccountId) {
+                throw new Error('Please select an account');
+            }
+
             if (mediaFiles.length === 0) {
                 throw new Error('Please select at least one media file');
             }
-    
+
+            const caption = form.querySelector('#caption').value.trim();
+            if (!caption) {
+                throw new Error('Please enter a caption');
+            }
+
+            const scheduleTime = form.querySelector('#scheduleTime').value;
+            if (!scheduleTime) {
+                throw new Error('Please select schedule time');
+            }
+
+            // Show loading state
             submitButton.disabled = true;
             submitButton.innerHTML = `
                 <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
@@ -167,50 +215,85 @@
                 </svg>
                 Scheduling...
             `;
-    
+
+            // Prepare form data
             const formData = new FormData();
             formData.append('accountId', selectedAccountId);
-            formData.append('caption', form.caption.value);
-            formData.append('scheduleTime', form.scheduleTime.value);
-            
-            mediaFiles.forEach(file => {
+            formData.append('caption', caption);
+            formData.append('scheduleTime', scheduleTime);
+
+            // Append media files
+            mediaFiles.forEach((file, index) => {
                 formData.append('media', file);
             });
-    
+
+            // Debug log
+            console.log('Sending post with data:', {
+                accountId: selectedAccountId,
+                caption: caption,
+                scheduleTime: scheduleTime,
+                mediaFilesCount: mediaFiles.length
+            });
+
+            // Send request
             const response = await fetch('/instagram/post/schedule', {
                 method: 'POST',
                 body: formData
             });
-    
-            const result = await response.json();
-    
-            if (result.success) {
+
+            const data = await response.json();
+
+            if (response.ok && data.success) {
                 showNotification('Post scheduled successfully', 'success');
                 closeScheduleModal();
-                window.location.reload();
+                await loadScheduledPosts();
             } else {
-                throw new Error(result.error || 'Failed to schedule post');
+                throw new Error(data.error || 'Failed to schedule post');
             }
         } catch (error) {
+            console.error('Schedule post error:', error);
             showNotification(error.message, 'error');
         } finally {
+            isProcessing = false;
             submitButton.disabled = false;
-            submitButton.textContent = submitText;
+            submitButton.textContent = originalButtonText;
         }
     }
     
     // UI Helper Functions
     function showScheduleModal(accountId) {
         selectedAccountId = accountId;
-        document.getElementById('schedulePostModal').classList.remove('hidden');
+        const modal = document.getElementById('schedulePostModal');
+        if (!modal) {
+            console.error('Schedule post modal not found');
+            return;
+        }
+
+        // Reset form and media files
         mediaFiles = [];
-        document.getElementById('mediaPreview').innerHTML = '';
-        document.getElementById('schedulePostForm').reset();
+        const form = document.getElementById('schedulePostForm');
+        const mediaPreview = document.getElementById('mediaPreview');
+        
+        if (form) form.reset();
+        if (mediaPreview) mediaPreview.innerHTML = '';
+        
+        // Set minimum schedule time to current time + 5 minutes
+        const scheduleTimeInput = document.getElementById('scheduleTime');
+        if (scheduleTimeInput) {
+            const minDateTime = new Date(Date.now() + 5 * 60000).toISOString().slice(0, 16);
+            scheduleTimeInput.min = minDateTime;
+        }
+        
+        modal.classList.remove('hidden');
     }
     
     function closeScheduleModal() {
-        document.getElementById('schedulePostModal').classList.add('hidden');
-        selectedAccountId = null;
+        const modal = document.getElementById('schedulePostModal');
+        if (modal) {
+            modal.classList.add('hidden');
+            selectedAccountId = null;
+            mediaFiles = [];
+        }
     }
     
     function showAddAccountModal() {
@@ -224,14 +307,15 @@
     }
     
     function removeMedia(button) {
-        const index = Array.from(button.closest('#mediaPreview').children).indexOf(button.closest('.relative'));
+        const container = button.closest('.relative.group');
+        const index = Array.from(container.parentNode.children).indexOf(container);
         mediaFiles.splice(index, 1);
-        button.closest('.relative').remove();
+        container.remove();
     }
     
     function showNotification(message, type = 'success') {
         const notification = document.createElement('div');
-        notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
+        notification.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 ${
             type === 'success' ? 'bg-green-500' : 'bg-red-500'
         } text-white transform translate-y-0 transition-transform duration-300 ease-out`;
         
@@ -241,9 +325,9 @@
                 <span>${message}</span>
             </div>
         `;
-    
+
         document.body.appendChild(notification);
-    
+
         setTimeout(() => {
             notification.style.transform = 'translateY(-100%)';
             setTimeout(() => notification.remove(), 300);
@@ -304,4 +388,86 @@
             input.dispatchEvent(new Event('change'));
         }
     }
+    
+    function showAccountMenu(accountId) {
+        const menu = document.createElement('div');
+        menu.className = 'absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5';
+        menu.innerHTML = `
+            <div class="py-1" role="menu">
+                <button onclick="refreshSession('${accountId}')" 
+                        class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                    Refresh Session
+                </button>
+                <button onclick="removeAccount('${accountId}')" 
+                        class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+                    Remove Account
+                </button>
+            </div>
+        `;
+
+        // Remove any existing menus
+        document.querySelectorAll('.account-menu').forEach(m => m.remove());
+        menu.classList.add('account-menu');
+        
+        // Add menu to DOM
+        const button = event.currentTarget;
+        button.parentNode.appendChild(menu);
+
+        // Close menu when clicking outside
+        document.addEventListener('click', function closeMenu(e) {
+            if (!menu.contains(e.target) && !button.contains(e.target)) {
+                menu.remove();
+                document.removeEventListener('click', closeMenu);
+            }
+        });
+    }
+
+    function openAddAccountModal() {
+        document.getElementById('addAccountModal').classList.remove('hidden');
+    }
+
+    function showAccountStats(accountId) {
+        fetch(`/instagram/account/${accountId}/stats`)
+            .then(response => response.json())
+            .then(data => {
+                // Create and show stats modal
+                const modal = document.createElement('div');
+                modal.className = 'fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full';
+                modal.innerHTML = `
+                    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+                        <div class="mt-3">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900">Account Statistics</h3>
+                            <div class="mt-2">
+                                <p class="text-sm text-gray-500">
+                                    Total Posts: ${data.totalPosts}<br>
+                                    Scheduled Posts: ${data.scheduledPosts}<br>
+                                    Success Rate: ${data.successRate}%
+                                </p>
+                            </div>
+                            <div class="mt-4">
+                                <button onclick="this.closest('.fixed').remove()" 
+                                        class="px-4 py-2 bg-blue-600 text-white rounded-md">
+                                    Close
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+            })
+            .catch(error => {
+                console.error('Error fetching stats:', error);
+                showNotification('Failed to load account statistics', 'error');
+            });
+    }
+
+    function logFormData(formData) {
+        for (let pair of formData.entries()) {
+            console.log(pair[0] + ': ' + (pair[1] instanceof File ? pair[1].name : pair[1]));
+        }
+    }
+
+
+    const MAX_FILES = 10;
+    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
     </script>

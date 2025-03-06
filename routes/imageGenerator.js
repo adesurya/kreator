@@ -7,12 +7,11 @@ const fs = require('fs');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 
-const ALLOWED_SIZES = ['256x256', '512x512', '1024x1024'];
-
 const uploadsDir = path.join(__dirname, '../public/uploads');
 if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true });
 }
+
 const imageGeneratorController = {
     renderPage: async (req, res) => {
         try {
@@ -38,27 +37,42 @@ const imageGeneratorController = {
 
     generateImage: async (req, res) => {
         try {
-            // const { prompt, size = "1024x1024" } = req.body;
-            const { prompt, size} = req.body;
+            const { prompt, size = "512x512" } = req.body;
+            const [width, height] = size.split('x').map(Number);
 
-            // Call OpenAI API
-            const response = await axios.post('https://api.openai.com/v1/images/generations', 
+            // Prepare request for Runware API
+            const requestBody = [
                 {
-                    model: "dall-e-3",
-                    prompt: prompt,
-                    n: 1,
-                    size: size
+                    taskType: "authentication",
+                    apiKey: process.env.RUNWARE_API_KEY
                 },
                 {
+                    taskType: "imageInference",
+                    taskUUID: uuidv4(),
+                    positivePrompt: prompt,
+                    width: width,
+                    height: height,
+                    model: "civitai:226533@490639",  //flux.1 agak mahal, quality oke
+                    //model: "runware:101@1",  //flux.1 agak mahal, quality oke                   
+                    numberResults: 1,
+                    outputFormat: "JPEG"
+                }
+            ];
+
+            // Call Runware API
+            const response = await axios.post('https://api.runware.ai/v1', 
+                requestBody,
+                {
                     headers: {
-                        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
                         'Content-Type': 'application/json'
                     }
                 }
             );
 
+            // Get image URL from response
+            const imageUrl = response.data.data[0].imageURL;
+
             // Download and save image locally
-            const imageUrl = response.data.data[0].url;
             const imageResponse = await axios.get(imageUrl, { responseType: 'arraybuffer' });
             const imageBuffer = Buffer.from(imageResponse.data);
             
@@ -87,8 +101,6 @@ const imageGeneratorController = {
             res.status(500).json({ error: 'Failed to generate image' });
         }
     },
-
-
 
     deleteHistory: async (req, res) => {
         try {
